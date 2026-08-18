@@ -1,6 +1,9 @@
 <script setup>
 import SampleOne from './components/practices/basic/SampleOne.vue'
 import SampleTwo from './components/practices/basic/SampleTwo.vue'
+import VueHtml from './components/practices/basic/VueHtml.vue'
+import VueHtmlXss from './components/practices/basic/VueHtmlXss.vue'
+import VueText from './components/practices/basic/VueText.vue'
 </script>
 
 <template>
@@ -8,6 +11,12 @@ import SampleTwo from './components/practices/basic/SampleTwo.vue'
   <SampleOne />
   <hr />
   <SampleTwo />
+  <hr />
+  <VueHtml />
+  <hr />
+  <VueHtmlXss />
+  <hr />
+  <VueText />
 </template>
 
 <style scoped>
