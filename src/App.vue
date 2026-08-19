@@ -11,6 +11,10 @@ import VueBindStyle from './components/practices/basic/VueBindStyle.vue'
 import VueIf from './components/practices/basic/VueIf.vue'
 import VueShow from './components/practices/basic/VueShow.vue'
 import VueFor from './components/practices/basic/VueFor.vue'
+import VuePre from './components/practices/basic/VuePre.vue'
+import VueCloak from './components/practices/basic/VueCloak.vue'
+import VueOnce from './components/practices/basic/VueOnce.vue'
+import VueMemo from './components/practices/basic/VueMemo.vue'
 </script>
 
 <template>
@@ -38,6 +42,14 @@ import VueFor from './components/practices/basic/VueFor.vue'
   <VueShow />
   <hr />
   <VueFor />
+  <hr />
+  <VuePre />
+  <hr />
+  <VueCloak />
+  <hr />
+  <VueOnce />
+  <hr />
+  <VueMemo />
 </template>
 
 
