@@ -65,7 +65,7 @@ const hottestCity = () =>
           'is-selected': selectedId === item.id,
         }"
         @click="
-          selectedId = item.id
+          selectedId = item.id;
           selectedCityInfo = `${item.name}이 선택되었습니다.`
         "
       >
