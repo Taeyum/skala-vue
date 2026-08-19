@@ -18,6 +18,10 @@ import VueMemo from './components/practices/basic/VueMemo.vue'
 import EventHandlerBasic from './components/practices/basic/EventHandlerBasic.vue'
 import EventHandlerObject from './components/practices/basic/EventHandlerObject.vue'
 import EventHandlerModifier from './components/practices/basic/EventHandlerModifier.vue'
+import ModelBasic from './components/practices/basic/ModelBasic.vue'
+import ModelForm from './components/practices/basic/ModelForm.vue'
+import ModelModifier from './components/practices/basic/ModelModifier.vue'
+import StyleScoped from './components/practices/basic/StyleScoped.vue'
 </script>
 
 <template>
@@ -59,10 +63,18 @@ import EventHandlerModifier from './components/practices/basic/EventHandlerModif
   <EventHandlerObject />
   <hr />
   <EventHandlerModifier />
+  <hr />
+  <ModelBasic />
+  <hr />
+  <ModelForm />
+  <hr />
+  <ModelModifier />
+  <hr />
+  <StyleScoped/>
 </template>
 
 
-<style scoped>
+<style>
 header {
   line-height: 1.5;
   max-height: 100vh;
@@ -124,4 +136,5 @@ nav a:first-of-type {
     margin-top: 1rem;
   }
 }
+
 </style>
