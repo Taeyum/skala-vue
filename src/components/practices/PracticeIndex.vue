@@ -22,6 +22,8 @@ import ModelBasic from './basic/ModelBasic.vue'
 import ModelForm from './basic/ModelForm.vue'
 import ModelModifier from './basic/ModelModifier.vue'
 import StyleScoped from './basic/StyleScoped.vue'
+import ReactiveRef from './composition/ReactiveRef.vue'
+import ReactiveReactive from './composition/ReactiveReactive.vue'
 </script>
 
 <template>
@@ -78,6 +80,11 @@ import StyleScoped from './basic/StyleScoped.vue'
 
     <h3 class="group">5. 스타일</h3>
     <StyleScoped />
+
+    <h3 class="group">6. Composition API</h3>
+    <ReactiveRef />
+    <hr />
+    <ReactiveReactive />
   </div>
 </template>
 
