@@ -24,6 +24,11 @@ import ModelModifier from './basic/ModelModifier.vue'
 import StyleScoped from './basic/StyleScoped.vue'
 import ReactiveRef from './composition/ReactiveRef.vue'
 import ReactiveReactive from './composition/ReactiveReactive.vue'
+import ComputedBasic from './composition/ComputedBasic.vue'
+import WatchersBasic from './composition/WatchersBasic.vue'
+import WatchersMulti from './composition/WatchersMulti.vue'
+import WatchersDeep from './composition/WatchersDeep.vue'
+import WatchersWatchEffect from './composition/WatchersWatchEffect.vue'
 </script>
 
 <template>
@@ -85,6 +90,16 @@ import ReactiveReactive from './composition/ReactiveReactive.vue'
     <ReactiveRef />
     <hr />
     <ReactiveReactive />
+    <hr />
+    <ComputedBasic />
+    <hr />
+    <WatchersBasic />
+    <hr />
+    <WatchersMulti />
+    <hr />
+    <WatchersDeep />
+    <hr />
+    <WatchersWatchEffect />
   </div>
 </template>
 

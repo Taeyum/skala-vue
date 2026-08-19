@@ -90,7 +90,7 @@ h1 {
   margin-bottom: 15px;
   border: 1px solid #e9ecef;
 }
-input {
+.search-box input {
   padding: 8px;
   width: 90%;
   font-size: 14px;
