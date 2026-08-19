@@ -1,44 +1,109 @@
 # skala-vue
 
-This template should help get you started developing with Vue 3 in Vite.
+SK AX Full-stack Engineering 3 — Frontend Framework: Vue.js 과정 실습 저장소입니다.
 
-## Recommended IDE Setup
+강의에서 배운 문법을 하나씩 실습 컴포넌트로 만들고, 단원별 Hands on 과제를 구현하고 있습니다.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Recommended Browser Setup
+## 프로젝트 구조
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```
+src/
+├── App.vue                             과제 / 실습 페이지 전환
+├── components/
+│   ├── exercise/
+│   │   └── WeatherMockup.vue           과제 1 (Ch3 Hands on)
+│   └── practices/
+│       ├── PracticeIndex.vue           실습 컴포넌트 모음
+│       └── basic/                      Ch3 실습 컴포넌트
+└── assets/
 ```
 
-### Compile and Hot-Reload for Development
+### 2026-08-19 (과제 1일차 / 페이지 분리 / 회고)
+처음에는 `App.vue`에 실습 컴포넌트를 전부 나열했는데, 개수가 20개를 넘어가니까 과제물이 스크롤 맨 아래에 묻혀버렸습니다.
+그래서 실습은 `PracticeIndex.vue`로 옮기고, `App.vue`는 어떤 화면을 보여줄지만 결정하도록 바꿨습니다.
 
-```sh
-npm run dev
-```
+페이지를 나누는 거라 원래는 Vue Router를 쓰는 게 맞겠지만 6장에서 배우는 내용이라, 지금은 `ref`와 `v-if`로 대신했습니다.
+6장까지 가면 `v-if` 자리를 `<RouterView />`로 바꾸면 그대로 라우터 구조가 될 것 같아서, 나중에 갈아타기 쉽도록 미리 컴포넌트를 분리해 두었습니다.
 
-### Compile and Minify for Production
+---
 
-```sh
-npm run build
-```
+## 과제 1 — Weather Mockup (Ch3 Hands on, p.116)
 
-### Lint with [ESLint](https://eslint.org/)
+### 요구사항 구현
 
-```sh
-npm run lint
-```
+| 요구사항 | 구현 |
+|---|---|
+| 1. 배열 렌더링 | `v-for="item in weatherList"` + `:key="item.id"` |
+| 2. 조건부 렌더링 | `v-if` / `v-else-if` / `v-else` 3단 분기 |
+| 3. 한글 처리 | `:value` + `@input` |
+| 4. 이벤트 및 수식어 | 카드 `@click`, 상세보기 `@click.stop` |
+| 5. 데이터 추가 | 도시 6개 확장, 정렬 / 게이지 / 최고 기온 |
+
+### 이렇게 판단했습니다
+
+**`:key`에 `index` 대신 `id`를 썼습니다.**
+
+강의자료 p.87은 `:key`에 반드시 고유한 값을 바인딩하라고 하는데, 정작 p.88 예제는 `:key="index"`를 씁니다.
+처음엔 예제를 그대로 따라 쳤다가, 인덱스가 정말 고유한 값인지 궁금해서 다시 생각해봤습니다.
+인덱스는 지금 이 순간에는 고유하지만 항목을 중간에 지우면 뒤쪽이 전부 한 칸씩 밀립니다.
+그러면 Vue 입장에서는 같은 key인데 다른 데이터가 되니까 엉뚱한 DOM을 재사용할 수 있겠다고 생각했습니다.
+과제 요구사항도 `id` 바인딩을 명시하고 있어서, p.87의 원칙 쪽을 따르기로 했습니다.
+
+**3번은 `v-model` 대신 `:value` + `@input`으로 만들었습니다.**
+
+요구사항에 그렇게 적혀 있기도 했지만, 왜 굳이 나눠 쓰라고 했는지가 궁금했습니다.
+직접 `v-model`로도 만들어서 한글을 쳐보니 차이가 바로 보였습니다.
+"서울"을 입력하면 `ㅅ`, `서`, `설` 같은 조합 중인 글자는 반영이 안 되고 글자가 완성되어야 값이 넘어옵니다.
+영어로 칠 때는 멀쩡해서 처음엔 뭐가 문제인지 몰랐는데, 한글은 자모를 조합하는 과정이 따로 있어서 그렇다는 걸 알게 됐습니다.
+`:value`와 `@input`으로 직접 연결하면 입력 이벤트가 날 때마다 값을 가져오기 때문에 조합 중인 글자도 실시간으로 반영됩니다.
+
+**`:class`와 `:style`을 용도에 따라 나눴습니다.**
+
+p.82에 정해진 상태 전환은 클래스, 연속적인 수치는 스타일이라는 기준이 있어서 그대로 적용해봤습니다.
+더움/선선함처럼 미리 정해둔 두 가지 상태는 `:class`로 클래스를 갈아 끼웠고, 온도 게이지처럼 값에 따라 길이가 연속적으로 달라지는 건 `:style`로 처리했습니다.
+게이지는 처음에 `temp * 3 + 'px'`로 만들었는데, 왜 3배인지 설명할 수가 없었습니다.
+기온이 어디까지 갈 수 있는지를 먼저 정해야 비율이 나온다는 생각이 들어서, 한국 기온을 -10도에서 40도로 잡고 그 폭을 0~100%로 환산하는 함수를 따로 만들었습니다.
+
+**`sort()` 대신 `toSorted()`를 썼습니다.**
+
+기온순 정렬 버튼을 만들면서 `sort()`를 쓰면 원본 배열이 그 자리에서 바뀝니다.
+1일차 Modern JavaScript에서 ES2023의 불변 배열 메서드를 배웠던 게 떠올라서 `toSorted()`로 바꿨습니다.
+새 배열을 만들어 재할당하는 쪽이 반응형 데이터를 다룰 때 더 예측 가능할 것 같았습니다.
+
+**기본값을 줄 때 `||`가 아니라 `??`를 썼습니다.**
+
+관측이 안 되는 도시를 하나 넣어보려고 `temp`를 `null`로 두었습니다.
+`item.temp || '측정 불가'`로 쓰면 될 것 같았는데, `||`는 0도 falsy로 취급한다는 게 생각났습니다.
+실제로 기온이 0도인 도시가 있으면 "측정 불가"로 바뀌어버리는데, 이건 조용히 잘못된 값이 나오는 거라 찾기도 어려울 것 같았습니다.
+`??`는 `null`과 `undefined`만 걸러내기 때문에 0도는 그대로 살아남습니다.
+
+---
+
+## 실습 진행 현황
+
+**1일차 (p.7–93)**
+Modern JavaScript, Vue 개요와 환경 구축, Vue Syntax 디렉티브까지 실습했습니다.
+`v-html`, `v-text`, `v-bind`, `v-if`/`v-show`, `v-for`, `v-pre`/`v-cloak`/`v-once`/`v-memo`를 각각 컴포넌트로 만들었습니다.
+
+**2일차 (p.94–144)**
+이벤트 핸들링, 폼 바인딩, 스타일을 마무리하고 Composition API로 넘어갔습니다.
+`ref`/`reactive`, `computed`, `watch`(기본 / Multi-Source / Deep / reactive), `watchEffect`를 실습 했습니다.
+
+---
+
+## 실습하면서 막혔던 것들
+
+**Prettier를 돌렸더니 화면이 통째로 깨졌습니다.**
+
+카드를 클릭할 때 선택 상태와 상태바를 같이 바꾸려고 `@click` 안에 두 문장을 세미콜론으로 이어 썼습니다.
+그런데 `npm run format`을 돌리자 Prettier가 세미콜론을 지웠고, 두 문장이 붙어버려서 Vue 컴파일러가 파싱을 못 했습니다.
+p.95에서 간단한 연산은 인라인, 복잡한 로직은 함수로 빼라고 했던 게 이런 이유였구나 싶었습니다.
+문장이 두 개가 된 시점에 이미 함수로 뺐어야 했던 것 같습니다.
+
+**체크박스가 화면 폭만큼 늘어났습니다.**
+
+과제 검색창을 넓히려고 CSS에 `input { width: 90% }`를 넣었는데, 실습 페이지의 체크박스와 라디오 버튼까지 전부 늘어나서 라벨이 화면 오른쪽 끝으로 밀려버렸습니다.
+태그 선택자를 전역에 두면 어디까지 영향이 가는지 예상하기 어렵다는 걸 확인했습니다.
+`.search-box input`처럼 범위를 좁히거나 `<style scoped>` 안에 넣는 쪽으로 정리했습니다.
