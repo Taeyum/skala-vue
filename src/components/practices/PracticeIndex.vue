@@ -30,6 +30,14 @@ import WatchersMulti from './composition/WatchersMulti.vue'
 import WatchersDeep from './composition/WatchersDeep.vue'
 import WatchersWatchEffect from './composition/WatchersWatchEffect.vue'
 import LifecycleChild from './component/LifecycleChild.vue'
+import PropsEmitsChild from './component/PropsEmitsChild.vue'
+import PropsEmitsParent from './component/PropsEmitsParent.vue'
+import SlotDefaultChild from './component/SlotDefaultChild.vue'
+import SlotDefaultParent from './component/SlotDefaultParent.vue'
+import SlotNamedChild from './component/SlotNamedChild.vue'
+import SlotNamedParent from './component/SlotNamedParent.vue'
+import SlotScopedChild from './component/SlotScopedChild.vue'
+import SlotScopedParent from './component/SlotScopedParent.vue'
 </script>
 
 <template>
@@ -104,6 +112,22 @@ import LifecycleChild from './component/LifecycleChild.vue'
 
     <h3 class="group">7. Lifecycle Hook</h3>
     <LifecycleChild />
+    <hr />
+    <PropsEmitsChild />
+    <hr />
+    <PropsEmitsParent />
+    <hr />
+    <SlotDefaultChild />
+    <hr />
+    <SlotDefaultParent />
+    <hr />
+    <SlotNamedChild />
+    <hr />
+    <SlotNamedParent />
+    <hr />
+    <SlotScopedChild />
+    <hr />
+    <SlotScopedParent />
   </div>
 </template>
 

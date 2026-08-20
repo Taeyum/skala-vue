@@ -8,9 +8,9 @@ console.log('1. [setup] 컴포넌트가 메모리에 생성되었습니다. (DOM
 
 onMounted(() => {
     console.log('2. [onMounted] 화면에 완벽히 부착되었습니다! (API 호출/DOM 조작 적기)')
-    timerId = setInterval(() => {
-        count.value++
-    }, 3000)
+    // timerId = setInterval(() => {
+    //     count.value++
+    // }, 3000)
 })
 
 onUpdated(() => {
