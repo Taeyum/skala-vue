@@ -29,6 +29,7 @@ import WatchersBasic from './composition/WatchersBasic.vue'
 import WatchersMulti from './composition/WatchersMulti.vue'
 import WatchersDeep from './composition/WatchersDeep.vue'
 import WatchersWatchEffect from './composition/WatchersWatchEffect.vue'
+import LifecycleChild from './component/LifecycleChild.vue'
 </script>
 
 <template>
@@ -100,6 +101,9 @@ import WatchersWatchEffect from './composition/WatchersWatchEffect.vue'
     <WatchersDeep />
     <hr />
     <WatchersWatchEffect />
+
+    <h3 class="group">7. Lifecycle Hook</h3>
+    <LifecycleChild />
   </div>
 </template>
 
