@@ -13,7 +13,14 @@ src/
 ├── App.vue                             과제 / 실습 페이지 전환
 ├── components/
 │   ├── exercise/
-│   │   └── WeatherMockup.vue           과제 1, 2
+│   │   ├── WeatherMockup.vue           과제 1, 2
+│   │   └── weather/                    과제 3
+│   │       ├── WeatherParent.vue       모든 반응형 데이터 보유
+│   │       ├── BaseDashboardCard.vue   slot 기반 공통 레이아웃
+│   │       ├── SearchBar.vue
+│   │       ├── WeatherCard.vue
+│   │       ├── WeatherBadge.vue
+│   │       └── TempGauge.vue
 │   └── practices/
 │       ├── PracticeIndex.vue           실습 컴포넌트 모음
 │       └── basic/                      실습 컴포넌트
@@ -34,6 +41,10 @@ Modern JavaScript, Vue 개요와 환경 구축, Vue Syntax 디렉티브까지 �
 
 **3일차 (p.145)**
 Composition API Hands on 과제를 진행했습니다.
+
+**4일차 (p.146–178)**
+Vue Components를 실습하고 Hands on 과제를 진행했습니다.
+Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로 만들었습니다.
 
 ---
 
@@ -62,6 +73,17 @@ Composition API Hands on 과제를 진행했습니다.
 
 컴포넌트를 나누고 싶은 마음도 있었지만 5장에서 배우는 내용이라 단일 파일을 유지했습니다.
 파일이 길어지고 있어서 5장에 가면 카드, 검색창, 상태바 정도로 쪼갤 생각입니다.
+
+</details>
+
+<details>
+<summary><b>2026-08-21 — 과제 3은 별도 폴더로 분리</b></summary>
+
+<br>
+
+과제 3은 과제 2를 컴포넌트로 쪼개는 리팩토링이라 `WeatherMockup.vue`를 덮어쓸까 고민했습니다.
+그런데 과제 1, 2와 과제 3은 각각 별개의 제출물이고 강사님이 과제별로 확인하실 수도 있어서, `weather/` 하위 폴더를 만들고 원본은 그대로 두기로 했습니다.
+`App.vue`에 버튼을 하나 더 만들어서 두 버전을 번갈아 볼 수 있게 했습니다.
 
 </details>
 
@@ -116,7 +138,7 @@ p.82에 정해진 상태 전환은 클래스, 연속적인 수치는 스타일�
 
 </details>
 
-<details open>
+<details>
 <summary><b>과제 2 — Weather Composition (Ch4 Hands on, p.145)</b></summary>
 
 <br>
@@ -161,28 +183,53 @@ p.82에 정해진 상태 전환은 클래스, 연속적인 수치는 스타일�
 
 </details>
 
----
-
-## 실습하면서 막혔던 것들
-
-<details>
-<summary>Prettier를 돌렸더니 화면이 통째로 깨졌습니다.</summary>
+<details open>
+<summary><b>과제 3 — Weather Component (Ch5 Hands on, p.178)</b></summary>
 
 <br>
 
-카드를 클릭할 때 선택 상태와 상태바를 같이 바꾸려고 `@click` 안에 두 문장을 세미콜론으로 이어 썼습니다.
-그런데 `npm run format`을 돌리자 Prettier가 세미콜론을 지웠고, 두 문장이 붙어버려서 Vue 컴파일러가 파싱을 못 했습니다.
-p.95에서 간단한 연산은 인라인, 복잡한 로직은 함수로 빼라고 했던 게 이런 이유였구나 싶었습니다.
+기능 변경 없이 과제 2를 컴포넌트로 분리한 리팩토링 과제입니다.
 
-</details>
+| 요구사항 | 구현 |
+|---|---|
+| 1. WeatherParent | 모든 반응형 데이터와 computed / watch 유지 |
+| 2. BaseDashboardCard | `<slot>`으로 검색박스·리스트박스 공통 디자인 |
+| 3. SearchBar | props `query` / emits `update-query` |
+| 4. WeatherCard | props `city` 등 / emits `select-card`, `click-detail` |
+| 5. 스타일 분리 | 각 컴포넌트의 `<style scoped>`로 이동 |
 
-<details>
-<summary>체크박스가 화면 폭만큼 늘어났습니다.</summary>
+### 추가로 넣은 것 (요구사항 7)
 
-<br>
+| 컴포넌트 | 분리한 이유 |
+|---|---|
+| `WeatherBadge` | 더움 / 선선함 / 관측 불가 3단 조건 분기를 카드 밖으로 |
+| `TempGauge` | 게이지 너비만 받는 단순 표시 컴포넌트 |
 
-과제 검색창을 넓히려고 CSS에 `input { width: 90% }`를 넣었는데, 실습 페이지의 체크박스와 라디오 버튼까지 전부 늘어나서 라벨이 화면 오른쪽 끝으로 밀려버렸습니다.
-태그 선택자를 전역에 두면 어디까지 영향이 가는지 예상하기 어렵다는 걸 확인했습니다.
-`.search-box input`처럼 범위를 좁히거나 `<style scoped>` 안에 넣는 쪽으로 정리했습니다.
+### 이렇게 판단했습니다
+
+**계산은 부모가 하고 자식은 그리기만 하도록 나눴습니다.**
+
+`WeatherCard`에 도시 객체만 넘기면 될 줄 알았는데, 온도 변환과 게이지 너비를 자식이 계산하려니 `unit` 같은 부모 상태까지 전부 내려보내야 했습니다.
+그래서 `convertTemp`와 `tempToWidth`는 부모에 두고 결과값만 props로 넘기기로 했습니다.
+`isSelected`, `isFavorite`도 `selectedId === city.id` 판정을 부모가 하고 자식은 `true`/`false`만 받습니다.
+props가 6개로 늘어나긴 했지만, 자식이 판단하지 않고 받은 대로 그리기만 하니 역할이 명확해졌습니다.
+
+**`BaseDashboardCard`에는 props도 emits도 넣지 않았습니다.**
+
+`SearchBar`가 `BaseDashboardCard` 안에 들어가 있어서 처음엔 중간에서 데이터를 한 번 더 넘겨줘야 하나 싶었습니다.
+그런데 요구사항 6번 설명대로, slot으로 전달되는 내용은 부모 스코프에서 컴파일되기 때문에 `WeatherParent`가 `SearchBar`와 직접 통신할 수 있었습니다.
+결과적으로 `BaseDashboardCard`는 디자인만 담당하는 껍데기가 됐습니다.
+
+**`WeatherBadge`는 조건 분기를 안으로 감췄습니다.**
+
+`v-if` / `v-else-if` / `v-else` 세 줄이 카드 안에 있으니 카드 템플릿이 길어졌습니다.
+배지 컴포넌트로 옮기고 온도만 넘기니, 카드는 "배지가 있다"만 알고 어떤 배지를 보여줄지는 배지가 스스로 정하게 됐습니다.
+
+**스타일을 옮기다 화면이 깨졌습니다.**
+
+`<style scoped>`가 자식 컴포넌트 내부에는 적용되지 않는데, `.dashboard-wrapper h4` 같은 규칙이 부모에 남아 있어서 자식 안의 글자 색이 안 걸렸습니다.
+`.weather-card` 기본 스타일은 전역 CSS에, 덮어쓰는 `is-hot` / `is-cool`은 `scoped`에 있어서 우선순위까지 꼬였습니다.
+같은 요소의 스타일이 두 파일에 흩어져 있는 게 원인이었고, 컴포넌트별로 한곳에 모으니 해결됐습니다.
+요구사항 5번이 스타일도 함께 분리하라고 한 이유를 이때 이해했습니다.
 
 </details>
