@@ -82,47 +82,10 @@ h1 {
   width: 600px;
   margin: 0 auto;
 }
-.search-box,
-.list-box {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #e9ecef;
-}
 .search-box input {
   padding: 8px;
   width: 90%;
   font-size: 14px;
-}
-.weather-card {
-  background: #fff;
-  border: 1px solid #dee2e6;
-  padding: 12px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-}
-.badge {
-  display: inline-block;
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 4px;
-  color: #fff;
-}
-.hot {
-  background-color: #ff7675;
-}
-.cool {
-  background-color: #74b9ff;
-}
-.btn-detail {
-  position: absolute;
-  right: 12px;
-  top: 15px;
-  padding: 6px 10px;
-  cursor: pointer;
 }
 .status-bar {
   background: #e8f5e9;

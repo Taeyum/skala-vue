@@ -3,6 +3,7 @@ import './assets/exercise.css'
 import { ref } from 'vue'
 import WeatherMockup from './components/exercise/WeatherMockup.vue'
 import PracticeIndex from './components/practices/PracticeIndex.vue'
+import WeatherParent from './components/exercise/weather/WeatherParent.vue'
 
 const page = ref('main')
 </script>
@@ -12,7 +13,10 @@ const page = ref('main')
     <h1>Skala-Vue</h1>
     <nav class="app-nav">
       <button :class="{ active: page === 'main' }" @click="page = 'main'">
-        과제1 (Weather Mockup)
+        과제1,2 (Weather Mockup)
+      </button>
+      <button :class="{ active: page === 'weather3' }" @click="page = 'weather3'">
+        과제3 (Component 분리)
       </button>
       <button :class="{ active: page === 'practice' }" @click="page = 'practice'">
         실습으로 이동 →
@@ -22,6 +26,7 @@ const page = ref('main')
 
   <main class="app-main">
     <WeatherMockup v-if="page === 'main'" />
+    <WeatherParent v-else-if="page === 'weather3'" />
     <PracticeIndex v-else />
   </main>
 </template>
