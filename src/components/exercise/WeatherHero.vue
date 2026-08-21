@@ -3,6 +3,11 @@ defineProps({
   city: { type: Object, default: null },
   displayTemp: { type: [Number, String], default: null },
   unit: { type: String, default: '℃' },
+  // 부모가 계산해 내려주는 현지 시각·일출·일몰 문자열 (자식은 그리기만)
+  localTime: { type: String, default: null },
+  sunrise: { type: String, default: null },
+  sunset: { type: String, default: null },
+  night: { type: Boolean, default: false },
 })
 
 const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
@@ -14,7 +19,13 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
       <div class="hero-left">
         <p class="hero-label">현재 선택한 지역</p>
         <h1 class="hero-city">{{ city.name }}</h1>
-        <p class="hero-status">{{ city.status }}</p>
+        <p class="hero-status">
+          {{ city.status }}
+          <template v-if="localTime">
+            <span class="dot">·</span>
+            <span class="local-time">{{ night ? '🌙' : '☀️' }} 현지 {{ localTime }}</span>
+          </template>
+        </p>
       </div>
 
       <div class="hero-center">
@@ -40,6 +51,14 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
         <div class="stat">
           <span class="stat-label">구름</span>
           <span class="stat-value">{{ city.clouds ?? '--' }}%</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">일출</span>
+          <span class="stat-value">{{ sunrise ?? '--' }}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">일몰</span>
+          <span class="stat-value">{{ sunset ?? '--' }}</span>
         </div>
       </div>
     </div>
@@ -123,8 +142,18 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
 
 .hero-right {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, auto);
   gap: 10px var(--sp-6);
+}
+
+.dot {
+  margin: 0 6px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.local-time {
+  color: rgba(255, 255, 255, 0.9);
+  font-variant-numeric: tabular-nums;
 }
 
 .stat {

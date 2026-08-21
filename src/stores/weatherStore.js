@@ -27,10 +27,8 @@ export const useWeatherStore = defineStore('weather', () => {
   // ── getters ──
   const hasData = computed(() => weatherList.value.length > 0)
 
-  const hottestCity = computed(() =>
-    weatherList.value
-      .filter((c) => c.temp !== null)
-      .toSorted((a, b) => b.temp - a.temp)[0],
+  const hottestCity = computed(
+    () => weatherList.value.filter((c) => c.temp !== null).toSorted((a, b) => b.temp - a.temp)[0],
   )
 
   // ── actions ──
@@ -46,7 +44,7 @@ export const useWeatherStore = defineStore('weather', () => {
           lang: 'kr',
         },
       })
-      
+
       const data = response.data
       return {
         id: city.id,
@@ -64,6 +62,10 @@ export const useWeatherStore = defineStore('weather', () => {
         clouds: data.clouds.all,
         lat: data.coord.lat,
         lon: data.coord.lon,
+        // 현지 시각·낮밤 판정용 (UTC 오프셋 초, UTC 타임스탬프)
+        timezone: data.timezone,
+        sunrise: data.sys?.sunrise ?? null,
+        sunset: data.sys?.sunset ?? null,
       }
     } catch (error) {
       console.error(`[weatherStore] ${city.name} 조회 실패:`, error)
@@ -73,7 +75,7 @@ export const useWeatherStore = defineStore('weather', () => {
         name: city.name,
         query: city.query,
         temp: null,
-        feelsLike: null, 
+        feelsLike: null,
         status: '조회 실패',
         weatherId: null,
         icon: null,
@@ -83,6 +85,9 @@ export const useWeatherStore = defineStore('weather', () => {
         clouds: null,
         lat: null,
         lon: null,
+        timezone: null,
+        sunrise: null,
+        sunset: null,
       }
     }
   }
@@ -105,7 +110,7 @@ export const useWeatherStore = defineStore('weather', () => {
   // id로 도시 하나 찾기 (상세 페이지용)
   const findById = (cityId) => weatherList.value.find((c) => c.id === cityId)
 
-    // 사용자가 추가한 도시 (검색 → 목록에 편입)
+  // 사용자가 추가한 도시 (검색 → 목록에 편입)
   const addCity = async (keyword) => {
     if (!keyword.trim()) return { ok: false, message: '도시 이름을 입력하세요.' }
 
@@ -120,9 +125,7 @@ export const useWeatherStore = defineStore('weather', () => {
       }
 
       // 2) 중복 확인 (좌표 기준)
-      const exists = weatherList.value.some(
-        (c) => c.lat === place.lat && c.lon === place.lon,
-      )
+      const exists = weatherList.value.some((c) => c.lat === place.lat && c.lon === place.lon)
       if (exists) {
         return { ok: false, message: '이미 목록에 있는 도시입니다.' }
       }
@@ -155,6 +158,6 @@ export const useWeatherStore = defineStore('weather', () => {
     fetchAll,
     findById,
     addCity,
-    removeCity
+    removeCity,
   }
 })

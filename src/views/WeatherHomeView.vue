@@ -1,11 +1,12 @@
 <script setup>
-import { ref, computed, watch, watchEffect, onMounted } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '@/stores/configStore.js'
 import { useFavoriteStore } from '@/stores/favoriteStore.js'
 import { useWeatherStore } from '@/stores/weatherStore.js'
 import { useForecastStore } from '@/stores/forecastStore.js'
 import { getGradient } from '@/utils/weatherTheme.js'
+import { formatLocalTime, formatStamp, isNight } from '@/utils/localTime.js'
 import WeatherHero from '@/components/exercise/WeatherHero.vue'
 import WeatherTile from '@/components/exercise/WeatherTile.vue'
 import CityAdder from '@/components/exercise/CityAdder.vue'
@@ -21,6 +22,16 @@ const forecastStore = useForecastStore()
 
 const searchQuery = ref('')
 const selectedForecast = ref([])
+
+// 현지 시각·낮밤 판정의 기준 "지금". 1분마다 갱신해 일몰을 지나면 화면이 따라 바뀐다
+const now = ref(Date.now())
+let clock = null
+onMounted(() => {
+  clock = setInterval(() => (now.value = Date.now()), 60 * 1000)
+})
+onUnmounted(() => clearInterval(clock))
+
+const cityIsNight = (city) => isNight(city?.sunrise, city?.sunset, now.value)
 const selectedId = ref('')
 
 onMounted(async () => {
@@ -66,8 +77,10 @@ watch(
   { immediate: true },
 )
 
+const selectedIsNight = computed(() => cityIsNight(selectedCity.value))
+
 const backgroundStyle = computed(() => ({
-  background: getGradient(selectedCity.value?.main),
+  background: getGradient(selectedCity.value?.main, selectedIsNight.value),
 }))
 
 const convertTemp = (celsius) => {
@@ -104,12 +117,16 @@ const handleRemove = (cityId) => {
 
 <template>
   <div class="dashboard" :style="backgroundStyle">
-    <WeatherAnimation :main="selectedCity?.main" />
+    <WeatherAnimation :main="selectedCity?.main" :night="selectedIsNight" />
     <!-- ① 히어로 -->
     <WeatherHero
       :city="selectedCity"
       :display-temp="convertTemp(selectedCity?.temp)"
       :unit="configStore.unitSymbol"
+      :local-time="formatLocalTime(selectedCity?.timezone, now)"
+      :sunrise="formatStamp(selectedCity?.sunrise, selectedCity?.timezone)"
+      :sunset="formatStamp(selectedCity?.sunset, selectedCity?.timezone)"
+      :night="selectedIsNight"
     >
       <template #extra>
         <LifeBriefing :city="selectedCity" :forecast="selectedForecast" mode="hero" />
@@ -151,6 +168,7 @@ const handleRemove = (cityId) => {
         :unit="configStore.unitSymbol"
         :is-selected="selectedId === item.id"
         :is-favorite="favoriteStore.isFavorite(item.id)"
+        :night="cityIsNight(item)"
         :can-remove="!item.id.startsWith('city_0')"
         @select="handleSelect"
         @detail="handleDetail"

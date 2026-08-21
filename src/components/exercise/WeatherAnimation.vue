@@ -4,7 +4,21 @@ import { computed } from 'vue'
 const props = defineProps({
   // OpenWeather weather[0].main
   main: { type: String, default: null },
+  // 일몰~일출 사이면 해 대신 달과 별
+  night: { type: Boolean, default: false },
 })
+
+// 별의 위치·크기·깜빡임 주기를 미리 계산 (빗방울과 같은 이유로 computed)
+const stars = computed(() =>
+  Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    top: Math.random() * 70,
+    size: 1 + Math.random() * 2,
+    delay: Math.random() * 4,
+    duration: 2 + Math.random() * 3,
+  })),
+)
 
 // 각 입자의 랜덤 위치·속도를 미리 계산 (렌더링마다 흔들리지 않도록 computed)
 const drops = computed(() =>
@@ -83,6 +97,26 @@ const type = computed(() => {
     </template>
 
     <!-- 맑음: 태양 광선 -->
+    <template v-else-if="type === 'clear' && night">
+      <span
+        v-for="s in stars"
+        :key="s.id"
+        class="star"
+        :style="{
+          left: s.left + '%',
+          top: s.top + '%',
+          width: s.size + 'px',
+          height: s.size + 'px',
+          animationDelay: s.delay + 's',
+          animationDuration: s.duration + 's',
+        }"
+      />
+      <div class="moon">
+        <span class="moon-glow" />
+        <span class="moon-core" />
+      </div>
+    </template>
+
     <div v-else-if="type === 'clear'" class="sun">
       <span class="sun-core" />
       <span class="sun-ray" />
@@ -190,6 +224,54 @@ const type = computed(() => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ── 달·별 ── */
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.3;
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+}
+
+.moon {
+  position: absolute;
+  top: 28px;
+  right: 60px;
+  width: 80px;
+  height: 80px;
+}
+
+.moon-glow {
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 250, 220, 0.25) 0%, rgba(255, 250, 220, 0) 65%);
+  animation: pulse 6s ease-in-out infinite;
+}
+
+.moon-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #fdf6d8;
+  /* 오른쪽 위를 같은 색 그림자로 가려 초승달 모양 */
+  box-shadow: inset -18px 10px 0 0 rgba(20, 30, 48, 0.85);
 }
 
 /* ── 구름 ── */

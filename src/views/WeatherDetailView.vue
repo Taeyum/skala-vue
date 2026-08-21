@@ -1,11 +1,12 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useWeatherStore } from '@/stores/weatherStore.js'
 import { useConfigStore } from '@/stores/configStore.js'
 import { usePhotoStore } from '@/stores/photoStore.js'
 import { useVideoStore } from '@/stores/videoStore.js'
 import { getPexelsQuery } from '@/utils/weatherTheme.js'
+import { formatLocalTime, formatLocalDate, getSunPhase } from '@/utils/localTime.js'
 import { useForecastStore } from '@/stores/forecastStore.js'
 import { useAirStore } from '@/stores/airStore.js'
 import ForecastChart from '@/components/exercise/ForecastChart.vue'
@@ -45,17 +46,27 @@ const iconUrl = computed(() =>
   city.value?.icon ? `https://openweathermap.org/img/wn/${city.value.icon}@2x.png` : null,
 )
 
-// 오늘 날짜와 현재 시각
-const today = computed(() => {
-  const now = new Date()
-  const date = now.toLocaleDateString('ko-KR', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  })
-  const time = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-  return `${date} · ${time}`
+// 기준 "지금" — 1분마다 갱신해 현지 시각·일몰 카운트다운이 움직이게 한다
+const now = ref(Date.now())
+let clock = null
+onMounted(() => {
+  clock = setInterval(() => (now.value = Date.now()), 60 * 1000)
 })
+onUnmounted(() => clearInterval(clock))
+
+// 도시 현지 날짜·시각 (내 PC 시각이 아니라 그 도시의 시각)
+const today = computed(() => {
+  const tz = city.value?.timezone
+  const date = formatLocalDate(tz, now.value)
+  const time = formatLocalTime(tz, now.value)
+  return date && time ? `${date} · ${time}` : ''
+})
+
+// 해·달 상태: 낮/밤, 다음 이벤트까지 남은 시간, 궤적 진행률
+const sun = computed(() =>
+  getSunPhase(city.value?.sunrise, city.value?.sunset, city.value?.timezone, now.value),
+)
+const night = computed(() => sun.value?.night ?? false)
 
 const goDetail = (cityId) => {
   router.push({ name: 'WeatherDetail', params: { cityId } })
@@ -90,10 +101,10 @@ watch(
 // 도시가 바뀌면 날씨에 맞는 배경 이미지·영상을 다시 조회
 // 이미지를 먼저 띄우고, 영상은 준비되는 대로 그 위에 페이드인한다
 watch(
-  () => city.value?.main,
-  async (main) => {
+  [() => city.value?.main, night],
+  async ([main, isNightNow]) => {
     if (!main) return
-    const query = getPexelsQuery(main)
+    const query = getPexelsQuery(main, isNightNow)
     // 이미지와 영상은 서로 의존이 없으므로 동시에 요청
     const [nextPhoto, nextVideo] = await Promise.all([
       photoStore.fetchPhoto(query),
@@ -167,7 +178,7 @@ onMounted(() => {
         @transitionend="pruneBelow(layer)"
       ></video>
       <div class="hero-overlay"></div>
-      <WeatherAnimation :main="city?.main" />
+      <WeatherAnimation :main="city?.main" :night="night" />
 
       <RouterLink to="/" class="back-btn">
         <span class="back-arrow" aria-hidden="true">←</span>
@@ -180,6 +191,16 @@ onMounted(() => {
           <div class="city-info">
             <h2>{{ city.name }}</h2>
             <p class="date">{{ today }}</p>
+            <div v-if="sun" class="sun-phase" :class="{ night: sun.night }">
+              <div class="sun-track">
+                <span class="sun-marker" :style="{ left: sun.progress * 100 + '%' }">
+                  {{ sun.night ? '🌙' : '☀️' }}
+                </span>
+              </div>
+              <span class="sun-text">
+                {{ sun.nextEvent === 'sunset' ? '일몰' : '일출' }}까지 {{ sun.remaining }}
+              </span>
+            </div>
           </div>
           <div class="icon-box">
             <img v-if="iconUrl" :src="iconUrl" alt="" />
@@ -261,6 +282,14 @@ onMounted(() => {
           <div class="detail-row">
             <dt>풍속</dt>
             <dd>{{ city.windSpeed ?? '--' }}m/s</dd>
+          </div>
+          <div v-if="sun" class="detail-row">
+            <dt>일출</dt>
+            <dd>{{ sun.sunriseText }}</dd>
+          </div>
+          <div v-if="sun" class="detail-row">
+            <dt>일몰</dt>
+            <dd>{{ sun.sunsetText }}</dd>
           </div>
         </dl>
       </div>
@@ -400,6 +429,47 @@ onMounted(() => {
   margin: var(--sp-1) 0 0;
   font-size: var(--fs-sm);
   color: rgba(255, 255, 255, 0.75);
+}
+
+/* 해·달 궤적 — 일출에서 일몰(밤엔 일몰에서 일출)까지 어디쯤인지 */
+.sun-phase {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.sun-track {
+  position: relative;
+  width: 120px;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.7),
+    rgba(255, 255, 255, 0.2)
+  );
+}
+
+.sun-marker {
+  position: absolute;
+  top: 50%;
+  font-size: 13px;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 4px rgba(255, 230, 150, 0.8));
+  transition: left 1s ease;
+}
+
+.sun-phase.night .sun-marker {
+  filter: drop-shadow(0 0 4px rgba(220, 230, 255, 0.8));
+}
+
+.sun-text {
+  font-size: var(--fs-xs);
+  color: rgba(255, 255, 255, 0.75);
+  font-variant-numeric: tabular-nums;
 }
 
 .icon-box {

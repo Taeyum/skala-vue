@@ -4,6 +4,7 @@ defineProps({
   displayTemp: { type: [Number, String], default: null },
   unit: { type: String, default: '℃' },
   isSelected: { type: Boolean, default: false },
+  night: { type: Boolean, default: false },
   isFavorite: { type: Boolean, default: false },
   canRemove: { type: Boolean, default: false },
 })
@@ -16,7 +17,10 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
 <template>
   <div class="tile" :class="{ selected: isSelected }" @click="emit('select', city)">
     <div class="tile-top">
-      <span class="name">{{ city.name }}</span>
+      <span class="name">
+        {{ city.name }}
+        <span v-if="night" class="night-mark" title="현지 시각 밤">🌙</span>
+      </span>
       <div class="tile-actions">
         <button
           class="icon-btn"
@@ -87,6 +91,12 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
   font-size: var(--fs-h2);
   font-weight: 700;
   color: var(--c-text);
+}
+
+.night-mark {
+  margin-left: 2px;
+  font-size: 12px;
+  vertical-align: 1px;
 }
 
 .tile-actions {

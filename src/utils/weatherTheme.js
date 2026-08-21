@@ -10,10 +10,27 @@ export const WEATHER_GRADIENT = {
   Haze: 'linear-gradient(160deg, #a49f8b, #e5e1d5)',
 }
 
+// 야간 팔레트 — 같은 날씨라도 일몰 뒤에는 어둡게
+export const WEATHER_GRADIENT_NIGHT = {
+  Clear: 'linear-gradient(160deg, #0f2027, #203a43 55%, #2c5364)',
+  Clouds: 'linear-gradient(160deg, #232526, #414345)',
+  Rain: 'linear-gradient(160deg, #141e30, #243b55)',
+  Drizzle: 'linear-gradient(160deg, #1c2833, #34495e)',
+  Thunderstorm: 'linear-gradient(160deg, #0b0f1a, #2c3e50)',
+  Snow: 'linear-gradient(160deg, #2c3e50, #4b6584)',
+  Mist: 'linear-gradient(160deg, #2f3640, #535c68)',
+  Fog: 'linear-gradient(160deg, #2f3640, #535c68)',
+  Haze: 'linear-gradient(160deg, #3d3d3d, #5c5c5c)',
+}
+
 // 기본값 (조회 실패나 목록에 없는 상태)
 export const DEFAULT_GRADIENT = 'linear-gradient(160deg, #dfe6e9, #f5f6fa)'
+export const DEFAULT_GRADIENT_NIGHT = 'linear-gradient(160deg, #1e272e, #485460)'
 
-export const getGradient = (main) => WEATHER_GRADIENT[main] ?? DEFAULT_GRADIENT
+export const getGradient = (main, isNight = false) =>
+  isNight
+    ? (WEATHER_GRADIENT_NIGHT[main] ?? DEFAULT_GRADIENT_NIGHT)
+    : (WEATHER_GRADIENT[main] ?? DEFAULT_GRADIENT)
 
 // OpenWeather main 값 → Pexels 검색어
 export const PEXELS_QUERY = {
@@ -28,7 +45,21 @@ export const PEXELS_QUERY = {
   Haze: 'hazy sky',
 }
 
-export const getPexelsQuery = (main) => PEXELS_QUERY[main] ?? 'weather sky'
+// 야간용 검색어 — 캐시 키가 검색어라 낮/밤 영상이 따로 캐시된다
+export const PEXELS_QUERY_NIGHT = {
+  Clear: 'starry night sky',
+  Clouds: 'night clouds moon',
+  Rain: 'rainy night city',
+  Drizzle: 'rainy night street',
+  Thunderstorm: 'lightning night',
+  Snow: 'snow falling night',
+  Mist: 'foggy night',
+  Fog: 'foggy night',
+  Haze: 'city lights night',
+}
+
+export const getPexelsQuery = (main, isNight = false) =>
+  isNight ? (PEXELS_QUERY_NIGHT[main] ?? 'night sky') : (PEXELS_QUERY[main] ?? 'weather sky')
 
 // OpenWeather의 상세 description을 자연스러운 한글로 매핑
 // 키는 응답의 weather[0].id (기상 코드)
