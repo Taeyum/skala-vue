@@ -39,6 +39,8 @@ import SlotNamedParent from './component/SlotNamedParent.vue'
 import SlotScopedChild from './component/SlotScopedChild.vue'
 import SlotScopedParent from './component/SlotScopedParent.vue'
 import StoreCounter from './library/StoreCounter.vue'
+import AxiosWeather from './library/AxiosWeather.vue'
+import AxiosJson from './library/AxiosJson.vue'
 </script>
 
 <template>
@@ -132,6 +134,11 @@ import StoreCounter from './library/StoreCounter.vue'
 
     <h3 class="group">8. Pinia</h3>
     <StoreCounter />
+
+    <h3 class="group">9. Axios</h3>
+    <AxiosWeather />
+    <hr />
+    <AxiosJson />
   </div>
 </template>
 
