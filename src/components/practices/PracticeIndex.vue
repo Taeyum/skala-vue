@@ -38,6 +38,7 @@ import SlotNamedChild from './component/SlotNamedChild.vue'
 import SlotNamedParent from './component/SlotNamedParent.vue'
 import SlotScopedChild from './component/SlotScopedChild.vue'
 import SlotScopedParent from './component/SlotScopedParent.vue'
+import StoreCounter from './library/StoreCounter.vue'
 </script>
 
 <template>
@@ -128,6 +129,9 @@ import SlotScopedParent from './component/SlotScopedParent.vue'
     <SlotScopedChild />
     <hr />
     <SlotScopedParent />
+
+    <h3 class="group">8. Pinia</h3>
+    <StoreCounter />
   </div>
 </template>
 
