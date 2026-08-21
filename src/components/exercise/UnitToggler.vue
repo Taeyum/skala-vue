@@ -35,7 +35,7 @@ const select = (value) => {
   display: inline-flex;
   padding: 3px;
   border-radius: var(--r-pill);
-  background: rgba(44, 62, 80, 0.08);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .seg {
@@ -44,7 +44,7 @@ const select = (value) => {
   border: none;
   border-radius: var(--r-pill);
   background: transparent;
-  color: var(--c-text-sub);
+  color: rgba(255, 255, 255, 0.6);
   font-size: var(--fs-sm);
   font-weight: 700;
   cursor: pointer;
@@ -55,7 +55,7 @@ const select = (value) => {
 }
 
 .seg:hover {
-  color: var(--c-text);
+  color: #fff;
 }
 
 .seg.active {
@@ -65,7 +65,7 @@ const select = (value) => {
 }
 
 .seg:focus-visible {
-  outline: 2px solid var(--c-primary);
+  outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 1px;
 }
 </style>

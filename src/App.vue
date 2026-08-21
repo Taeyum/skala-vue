@@ -50,12 +50,13 @@ const favoriteStore = useFavoriteStore()
   align-items: center;
   gap: var(--sp-10) 48px;
   padding: 10px var(--sp-5) 10px var(--sp-6);
-  border: 1px solid var(--surface-border);
+  /* 바탕이 짙은 남색이라 헤더도 어두운 유리 — 스크롤하면 히어로 그라디언트가 비친다 */
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--r-lg);
-  background: var(--surface);
-  backdrop-filter: var(--surface-blur);
-  -webkit-backdrop-filter: var(--surface-blur);
-  box-shadow: var(--shadow-md);
+  background: rgba(15, 20, 30, 0.55);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
 }
 
 .logo {
@@ -65,7 +66,7 @@ const favoriteStore = useFavoriteStore()
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.3px;
-  color: var(--c-text);
+  color: #fff;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -87,7 +88,7 @@ const favoriteStore = useFavoriteStore()
   gap: 6px;
   padding: 7px 14px;
   border-radius: var(--r-pill);
-  color: var(--c-text-sub);
+  color: rgba(255, 255, 255, 0.65);
   text-decoration: none;
   font-weight: 600;
   font-size: var(--fs-body);
@@ -97,18 +98,18 @@ const favoriteStore = useFavoriteStore()
 }
 
 .nav-item:hover {
-  color: var(--c-text);
-  background: rgba(44, 62, 80, 0.06);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .nav-item.router-link-exact-active {
-  color: var(--c-primary);
-  background: var(--c-primary-soft);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .nav-item:focus-visible,
 .logo:focus-visible {
-  outline: 2px solid var(--c-primary);
+  outline: 2px solid rgba(255, 255, 255, 0.8);
   outline-offset: 2px;
 }
 
