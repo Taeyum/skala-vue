@@ -4,10 +4,12 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useWeatherStore } from '@/stores/weatherStore.js'
 import { useConfigStore } from '@/stores/configStore.js'
 import { usePhotoStore } from '@/stores/photoStore.js'
+import { useVideoStore } from '@/stores/videoStore.js'
 import { getPexelsQuery } from '@/utils/weatherTheme.js'
 import { useForecastStore } from '@/stores/forecastStore.js'
 import { useAirStore } from '@/stores/airStore.js'
 import ForecastChart from '@/components/exercise/ForecastChart.vue'
+import WeatherAnimation from '@/components/exercise/WeatherAnimation.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +17,11 @@ const weatherStore = useWeatherStore()
 const configStore = useConfigStore()
 const photoStore = usePhotoStore()
 const photo = ref(null)
+const videoStore = useVideoStore()
+// 배경 영상 레이어 목록. 새 영상은 재생 준비가 끝난 뒤 이전 영상 위로 페이드인하고,
+// 전환이 끝나면 아래 레이어를 지운다 (도시 전환 시 사진이 끼어드는 깜빡임 방지)
+const videoLayers = ref([])
+const currentVideo = computed(() => videoLayers.value.findLast((l) => l.ready) ?? null)
 const forecastStore = useForecastStore()
 const forecastList = ref([])
 const airStore = useAirStore()
@@ -53,15 +60,42 @@ const goDetail = (cityId) => {
   router.push({ name: 'WeatherDetail', params: { cityId } })
 }
 
-// 도시가 바뀌면 날씨에 맞는 배경 이미지를 다시 조회
+// 도시가 바뀌면 날씨에 맞는 배경 이미지·영상을 다시 조회
+// 이미지를 먼저 띄우고, 영상은 준비되는 대로 그 위에 페이드인한다
 watch(
   () => city.value?.main,
   async (main) => {
     if (!main) return
-    photo.value = await photoStore.fetchPhoto(getPexelsQuery(main))
+    const query = getPexelsQuery(main)
+    // 이미지와 영상은 서로 의존이 없으므로 동시에 요청
+    const [nextPhoto, nextVideo] = await Promise.all([
+      photoStore.fetchPhoto(query),
+      videoStore.fetchVideo(query),
+    ])
+    photo.value = nextPhoto
+
+    // 영상이 없는 날씨면 이전 영상을 걷어내고 이미지만 보여준다
+    if (!nextVideo) {
+      videoLayers.value = []
+      return
+    }
+    // 같은 영상이면 끊지 않고 계속 재생
+    if (videoLayers.value.at(-1)?.url === nextVideo.url) return
+    videoLayers.value.push({ ...nextVideo, ready: false })
   },
   { immediate: true },
 )
+
+// 재생 준비가 끝난 레이어만 페이드인
+const onVideoReady = (layer) => {
+  layer.ready = true
+}
+
+// 페이드인이 끝나면 그 아래 깔려 있던 이전 레이어를 제거
+const pruneBelow = (layer) => {
+  const idx = videoLayers.value.indexOf(layer)
+  if (idx > 0) videoLayers.value.splice(0, idx)
+}
 
 // 도시가 바뀌면 예보를 다시 조회
 watch(
@@ -92,12 +126,27 @@ onMounted(() => {
   <div class="detail-layout">
     <!-- ── 좌측: 히어로 영역 ── -->
     <section class="hero" :style="heroStyle">
+      <!-- 배경 영상: 이미지 위에 깔리고 재생 준비되면 페이드인 -->
+      <video
+        v-for="layer in videoLayers"
+        :key="layer.url"
+        :src="layer.url"
+        class="hero-video"
+        :class="{ 'is-ready': layer.ready }"
+        autoplay
+        muted
+        loop
+        playsinline
+        @canplay="onVideoReady(layer)"
+        @transitionend="pruneBelow(layer)"
+      ></video>
       <div class="hero-overlay"></div>
       <WeatherAnimation :main="city?.main" />
 
-      <div class="hero-top">
-        <RouterLink to="/" class="brand">← 대시보드</RouterLink>
-      </div>
+      <RouterLink to="/" class="back-btn">
+        <span class="back-arrow" aria-hidden="true">←</span>
+        대시보드
+      </RouterLink>
 
       <div v-if="city" class="hero-bottom">
         <div class="temp-row">
@@ -120,8 +169,11 @@ onMounted(() => {
       <!-- 시간별 예보 -->
       <ForecastChart v-if="city" :list="forecastList" class="forecast-area" />
 
-      <!-- Pexels 가이드라인: 사진작가 크레딧 표기 -->
-      <a v-if="photo" :href="photo.link" target="_blank" rel="noopener" class="credit">
+      <!-- Pexels 가이드라인: 크레딧 표기 (영상이 재생 중이면 영상 제작자, 아니면 사진작가) -->
+      <a v-if="currentVideo" :href="currentVideo.link" target="_blank" rel="noopener" class="credit">
+        Video by {{ currentVideo.author }} on Pexels
+      </a>
+      <a v-else-if="photo" :href="photo.link" target="_blank" rel="noopener" class="credit">
         Photo by {{ photo.photographer }} on Pexels
       </a>
     </section>
@@ -191,9 +243,10 @@ onMounted(() => {
 .detail-layout {
   display: flex;
   min-height: 560px;
-  border-radius: 12px;
+  border-radius: var(--r-lg);
   overflow: hidden;
   background: #2c3e50;
+  box-shadow: var(--shadow-md);
 }
 
 /* ── 좌측 히어로 ── */
@@ -203,12 +256,27 @@ onMounted(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: var(--sp-6);
   background: linear-gradient(160deg, #4a5568, #2d3748);
   background-size: cover;
   background-position: center;
   transition: background-image 0.5s ease;
   color: #fff;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+.hero-video.is-ready {
+  opacity: 1;
 }
 
 .hero-overlay {
@@ -218,24 +286,51 @@ onMounted(() => {
   pointer-events: none;
 }
 
-.hero-top,
 .hero-bottom {
   position: relative;
   z-index: 1;
   margin-top: auto;
 }
 
-.brand {
-  color: rgba(255, 255, 255, 0.85);
+/* 좌상단 뒤로가기 — 사진 밝기와 무관하게 보이도록 유리 pill 형태 */
+.back-btn {
+  position: absolute;
+  top: var(--sp-4);
+  left: var(--sp-4);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--sp-2) 14px var(--sp-2) var(--sp-3);
+  border: 1px solid var(--surface-dark-border);
+  border-radius: var(--r-pill);
+  background: var(--surface-dark);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  color: #fff;
+  font-size: var(--fs-sm);
+  font-weight: 600;
   text-decoration: none;
-  font-weight: bold;
-  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(0, 0, 0, 0.55);
+  transform: translateX(-2px);
+}
+
+.back-arrow {
+  font-size: 15px;
+  line-height: 1;
 }
 
 .temp-row {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 .temp-big {
@@ -257,8 +352,8 @@ onMounted(() => {
 }
 
 .date {
-  margin: 4px 0 0;
-  font-size: 13px;
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-sm);
   color: rgba(255, 255, 255, 0.75);
 }
 
@@ -273,7 +368,7 @@ onMounted(() => {
 
 .status {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-body);
   color: rgba(255, 255, 255, 0.85);
 }
 
@@ -283,10 +378,10 @@ onMounted(() => {
 
 .credit {
   position: absolute;
-  right: 12px;
-  bottom: 8px;
+  right: var(--sp-3);
+  bottom: var(--sp-2);
   z-index: 1;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
 }
@@ -298,19 +393,19 @@ onMounted(() => {
 /* ── 우측 패널 ── */
 .panel {
   flex: 0 0 38%;
-  padding: 24px;
+  padding: var(--sp-6);
   background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
   color: #fff;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  
+  gap: var(--sp-6);
 }
 
 .panel-title {
-  margin: 0 0 12px;
-  font-size: 15px;
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-h2);
   font-weight: 700;
   color: #fff;
 }
@@ -322,8 +417,9 @@ onMounted(() => {
 }
 
 .city-list li {
-  padding: 8px 0;
+  padding: var(--sp-2) 0;
   color: rgba(255, 255, 255, 0.8);
+  font-size: var(--fs-body);
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -346,6 +442,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   padding: 10px 0;
+  font-size: var(--fs-body);
 }
 
 .detail-row dt {
@@ -356,16 +453,18 @@ onMounted(() => {
   margin: 0;
   font-weight: 700;
 }
+
 .forecast-area {
-  margin-top: 16px;
+  margin-top: var(--sp-4);
 }
+
 .air-badge {
   display: inline-block;
-  margin-bottom: 8px;
-  padding: 4px 14px;
-  border-radius: 14px;
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-1) 14px;
+  border-radius: var(--r-pill);
   color: #fff;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 700;
 }
 </style>
