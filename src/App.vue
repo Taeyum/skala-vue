@@ -1,64 +1,48 @@
 <script setup>
 import './assets/exercise.css'
-import { ref } from 'vue'
-import WeatherMockup from './components/exercise/WeatherMockup.vue'
-import PracticeIndex from './components/practices/PracticeIndex.vue'
-import WeatherParent from './components/exercise/weather/WeatherParent.vue'
+import { ref, provide, watch } from 'vue'
+import { RouterLink, RouterView } from 'vue-router';
 
-const page = ref('main')
+// 즐겨찾기 상태를 앱 최상위로 승격 (라우트 간 공유를 위해)
+const favoriteIds = ref([])
+
+const toggleFavorite = (cityId) => {
+  const index = favoriteIds.value.indexOf(cityId)
+  if (index === -1) {
+    favoriteIds.value.push(cityId)
+  } else {
+    favoriteIds.value.splice(index, 1)
+  }
+}
+
+watch(
+  favoriteIds,
+  (newVal) => {
+    console.log(`[watch] 즐겨찾기 변경! 현재 ${newVal.length}개:`, newVal.join(', '))
+  },
+  { deep: true },
+)
+
+// 하위 모든 컴포넌트에서 inject 가능
+provide('favoriteIds', favoriteIds)
+provide('toggleFavorite', toggleFavorite)
 </script>
 
 <template>
-  <header class="app-header">
-    <h1>Skala-Vue</h1>
-    <nav class="app-nav">
-      <button :class="{ active: page === 'main' }" @click="page = 'main'">
-        과제1,2 (Weather Mockup)
-      </button>
-      <button :class="{ active: page === 'weather3' }" @click="page = 'weather3'">
-        과제3 (Component 분리)
-      </button>
-      <button :class="{ active: page === 'practice' }" @click="page = 'practice'">
-        실습으로 이동 →
-      </button>
+  <div class="app-container">
+    <h1> 과제 4: 라우터 적용 </h1>
+    <hr />
+
+    <nav class="navigation-bar">
+      <RouterLink to="/" class="nav-item">날씨 대시보드</RouterLink>
+      <span class="divider">|</span>
+      <RouterLink to="/favorites" class="nav-item">즐겨 찾기</RouterLink>
+      <span class="divider">|</span>
+      <RouterLink to="/about" class="nav-item">서비스 소개</RouterLink>
     </nav>
-  </header>
 
-  <main class="app-main">
-    <WeatherMockup v-if="page === 'main'" />
-    <WeatherParent v-else-if="page === 'weather3'" />
-    <PracticeIndex v-else />
-  </main>
+    <main>
+      <RouterView />
+    </main>
+  </div>
 </template>
-
-<style scoped>
-.app-header {
-  padding-bottom: 12px;
-  border-bottom: 2px solid #42b883;
-}
-
-.app-nav {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.app-nav button {
-  padding: 8px 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #fff;
-  cursor: pointer;
-}
-
-.app-nav button.active {
-  border-color: #42b883;
-  background-color: #42b883;
-  color: #fff;
-  font-weight: bold;
-}
-
-.app-main {
-  padding-top: 20px;
-}
-</style>

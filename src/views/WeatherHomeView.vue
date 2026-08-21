@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue'
-import BaseDashboardCard from './BaseDashboardCard.vue';
-import SearchBar from './SearchBar.vue';
-import WeatherCard from './WeatherCard.vue';
+import { ref, computed, watch, watchEffect, inject, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router';
+import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue';
+import SearchBar from '@/components/exercise/SearchBar.vue';
+import WeatherCard from '@/components/exercise/WeatherCard.vue';
 
 const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
@@ -14,19 +15,22 @@ const weatherList = ref([
 ])
 
 const searchQuery = ref('')
+
+onMounted(() => {
+  if (route.query.search) {
+    searchQuery.value = route.query.search
+  }
+})
+
 const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 const selectedId = ref('')
 const unit = ref('C')
-const favoriteIds = ref([])
+const route = useRoute()
+const router = useRouter()
 
-const toggleFavorite = (cityId) => {
-    const index = favoriteIds.value.indexOf(cityId)
-    if(index === -1) {
-        favoriteIds.value.push(cityId)
-    } else {
-        favoriteIds.value.splice(index, 1)
-    }
-}
+// favoriteIds, toggleFavorite 선언과 watch는 삭제하고 inject로 대체
+const favoriteIds = inject('favoriteIds')
+const toggleFavorite = inject('toggleFavorite')
 
 const filteredWeatherList = computed(() => {
     return weatherList.value.filter((item) => item.name.includes(searchQuery.value))
@@ -40,17 +44,17 @@ watchEffect(() => {
     console.log(`[watchEffect] 현재 검색어: "${searchQuery.value}"`)
 })
 
+// 검색어 변경을 주소창에 동기화 (히스토리를 더럽히지 않도록 replace 사용)
+watch(searchQuery, (newQuery) => {
+  router.replace({
+    query: newQuery ? { search: newQuery } : {},
+  })
+})
+
+
 watch(unit, (newUnit, oldUnit) => {
     console.log(`[watch] 온도 단위 변경: ${oldUnit} -> ${newUnit}`)
 })
-
-watch(
-    favoriteIds,
-    (newVal) => {
-        console.log(`[watch] 즐겨찾기 변경! 현재 ${newVal.length}개:`, newVal.join(', '))
-    },
-    { deep: true },
-)
 
 const tempToWidth = (temp) => ((temp + 10) / 50) * 100 + '%'
 
@@ -78,7 +82,7 @@ const handleSelectCard = (city) => {
 }
 
 const handleClickDetail = (city) => {
-  window.alert(`${city.name} 현재 날씨는 [${city.status}] 입니다.`)
+  router.push(`/weather/${city.id}`)
 }
 </script>
 
@@ -99,7 +103,7 @@ const handleClickDetail = (city) => {
         </div>
       </div>
 
-      <p class="summary">
+      <p class="summary" v-if="hottestCity">
         오늘 가장 더운 곳: <strong>{{ hottestCity.name }}</strong>
         ({{ convertTemp(hottestCity.temp) }}°{{ unit }})
       </p>
@@ -131,7 +135,6 @@ const handleClickDetail = (city) => {
 
 <style scoped>
 .dashboard-wrapper h3,
-.dashboard-wrapper h4,
 .dashboard-wrapper p {
   color: #2c3e50;
 }
