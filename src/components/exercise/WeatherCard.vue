@@ -27,9 +27,17 @@ defineProps({
         type: Boolean,
         default: false,
     },
+    icon: {
+        type: String,
+        default: null,
+    },
+    canRemove: {
+      type: Boolean,
+      default: false,
+    },
 })
 
-const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
+const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite', 'remove-card'])
 </script>
 
 <template>
@@ -42,7 +50,10 @@ const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
         }"
         @click="emit('select-card', city)"
     >
-        <h4>{{ city.name }} ({{ city.status }})</h4>
+        <div class="card-title">
+          <img v-if="icon" :src="`https://openweathermap.org/img/wn/${icon}@2x.png`" alt="" class="weather-icon" />
+          <h4>{{ city.name }} ({{ city.status }})</h4>
+        </div>
         <p>현재 기온: {{ displayTemp ?? '측정 불가' }}{{ city.temp === null ? '' : unit }}</p>
 
         <TempGauge v-if="city.temp !== null" :width="gaugeWidth" />
@@ -51,6 +62,13 @@ const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
         <button class="btn-fav" :class="{ active: isFavorite }" @click.stop="emit('toggle-favorite', city.id)">
             {{ isFavorite ? '★' : '☆' }}
         </button>
+
+        <button
+          v-if="canRemove"
+          class="btn-remove"
+          @click.stop="emit('remove-card', city.id)"
+          title="목록에서 제거"
+        > ✕ </button>
 
         <button class="btn-detail" @click.stop="emit('click-detail', city)">상세보기</button>
     </div>
@@ -112,5 +130,36 @@ const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
 .btn-fav.active {
   border-color: #f7b731;
   color: #f7b731;
+}
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-title h4 {
+  margin: 0;
+}
+
+.weather-icon {
+  width: 40px;
+  height: 40px;
+}
+.btn-remove {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 2px 8px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background: #fff;
+  color: #868e96;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-remove:hover {
+  border-color: #ff7675;
+  color: #ff7675;
 }
 </style>

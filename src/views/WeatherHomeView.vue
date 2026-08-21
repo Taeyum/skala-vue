@@ -3,29 +3,27 @@ import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 import { useConfigStore } from '@/stores/configStore.js'
 import { useFavoriteStore } from '@/stores/favoriteStore';
+import { useWeatherStore } from '@/stores/weatherStore';
 import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue';
 import SearchBar from '@/components/exercise/SearchBar.vue';
 import WeatherCard from '@/components/exercise/WeatherCard.vue';
+import { getGradient } from '@/utils/weatherTheme.js'
+import CityAdder from '@/components/exercise/CityAdder.vue'
 
 const route = useRoute()
 const router = useRouter()
 const configStore = useConfigStore()
 const favoriteStore = useFavoriteStore()
-
-const weatherList = ref([
-  { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
-  { id: 'city_02', name: '수원', temp: 24, status: '비' },
-  { id: 'city_03', name: '부산', temp: 26, status: '구름' },
-  { id: 'city_04', name: '강릉', temp: 31, status: '맑음' },
-  { id: 'city_05', name: '대전', temp: 22, status: '흐림' },
-  { id: 'city_06', name: '제주', temp: null, status: '관측 장애' },
-])
+const weatherStore = useWeatherStore()
 
 const searchQuery = ref('')
 
 onMounted(() => {
   if (route.query.search) {
     searchQuery.value = route.query.search
+  }
+  if (!weatherStore.hasData) {
+    weatherStore.fetchAll()
   }
 })
 
@@ -34,7 +32,7 @@ const selectedId = ref('')
 
 
 const filteredWeatherList = computed(() => {
-    return weatherList.value.filter((item) => item.name.includes(searchQuery.value))
+    return weatherStore.weatherList.filter((item) => item.name.includes(searchQuery.value))
 })
 
 watch(selectedCityInfo, (newInfo, oldInfo) => {
@@ -71,9 +69,10 @@ const sortedWeatherList = computed(() => {
   return list
 })
 
-const hottestCity = computed(() =>
-  weatherList.value.filter((c) => c.temp !== null).toSorted((a, b) => b.temp - a.temp)[0],
-)
+const backgroundStyle = computed(() => {
+  const selected = weatherStore.weatherList.find((c) => c.id === selectedId.value)
+  return { background: getGradient(selected?.main) }
+})
 
 // 자식이 emit 으로 올려보낸 이벤트를 처리하는 핸들러
 const handleUpdateQuery = (value) => {
@@ -88,12 +87,28 @@ const handleSelectCard = (city) => {
 const handleClickDetail = (city) => {
   router.push(`/weather/${city.id}`)
 }
+
+const handleRemoveCard = (cityId) => {
+  weatherStore.removeCity(cityId)
+  // 삭제한 도시가 선택 상태였다면 초기화
+  if (selectedId.value === cityId) {
+    selectedId.value = ''
+    selectedCityInfo.value = '카드를 클릭하거나 검색해 보세요.'
+  }
+  if (favoriteStore.isFavorite(cityId)) {
+  favoriteStore.toggleFavorite(cityId)
+  } 
+}
 </script>
 
 <template>
-  <div class="dashboard-wrapper">
+  <div class="dashboard-wrapper" :style="backgroundStyle">
     <BaseDashboardCard>
       <SearchBar :query="searchQuery" @update-query="handleUpdateQuery" />
+    </BaseDashboardCard>
+
+    <BaseDashboardCard>
+      <CityAdder />
     </BaseDashboardCard>
 
     <BaseDashboardCard>
@@ -106,9 +121,14 @@ const handleClickDetail = (city) => {
         </div>
       </div>
 
-      <p class="summary" v-if="hottestCity">
-        오늘 가장 더운 곳: <strong>{{ hottestCity.name }}</strong>
-        ({{ convertTemp(hottestCity.temp) }}{{ configStore.unitSymbol }})
+      <p v-if="weatherStore.isLoading" class="state-msg">날씨 정보를 불러오는 중입니다...</p>
+        <p v-else-if="weatherStore.errorMessage" class="state-msg error">
+          {{ weatherStore.errorMessage }}
+        </p>  
+
+      <p class="summary" v-if="weatherStore.hottestCity">
+        오늘 가장 더운 곳: <strong>{{ weatherStore.hottestCity.name }}</strong>
+        ({{ convertTemp(weatherStore.hottestCity.temp) }}{{ configStore.unitSymbol }})
       </p>
 
       <WeatherCard
@@ -117,12 +137,15 @@ const handleClickDetail = (city) => {
         :city="item"
         :display-temp="convertTemp(item.temp)"
         :unit="configStore.unitSymbol"
+        :icon="item.icon"
         :gauge-width="item.temp !== null ? tempToWidth(item.temp) : '0%'"
         :is-selected="selectedId === item.id"
         :is-favorite="favoriteStore.isFavorite(item.id)"
+        :can-remove="!item.id.startsWith('city_0')"
         @select-card="handleSelectCard"
         @click-detail="handleClickDetail"
         @toggle-favorite="favoriteStore.toggleFavorite"
+        @remove-card="handleRemoveCard"
       />
 
       <p v-if="sortedWeatherList.length === 0" class="no-result">
@@ -171,5 +194,23 @@ const handleClickDetail = (city) => {
   padding: 20px;
   text-align: center;
   color: #868e96;
+}
+
+.state-msg {
+  padding: 20px;
+  text-align: center;
+  color: #868e96;
+}
+
+.state-msg.error {
+  color: #e74c3c;
+}
+.dashboard-wrapper {
+  padding: 20px;
+  border-radius: 12px;
+  transition: background 0.6s ease;
+}
+.status-bar {
+  background: rgba(232, 245, 233, 0.8);
 }
 </style>
