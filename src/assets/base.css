@@ -60,11 +60,10 @@
 
 body {
   min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
-  transition:
-    color 0.5s,
-    background-color 0.5s;
+  /* OS 다크모드와 무관하게 앱 고유 배경을 고정한다 */
+  background: linear-gradient(180deg, #1a1f2e 0%, #0f1419 100%);
+  background-attachment: fixed;
+  color: #2c3e50;
   line-height: 1.6;
   font-family:
     Inter,

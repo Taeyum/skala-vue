@@ -13,9 +13,12 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@primeuix/themes": "^3.0.0",
     "axios": "^1.19.0",
     "element-plus": "^2.14.4",
     "pinia": "^3.0.4",
+    "primeicons": "^8.0.0",
+    "primevue": "^5.0.1",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"
   },

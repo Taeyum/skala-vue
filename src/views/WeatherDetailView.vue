@@ -93,6 +93,7 @@ onMounted(() => {
     <!-- ── 좌측: 히어로 영역 ── -->
     <section class="hero" :style="heroStyle">
       <div class="hero-overlay"></div>
+      <WeatherAnimation :main="city?.main" />
 
       <div class="hero-top">
         <RouterLink to="/" class="brand">← 대시보드</RouterLink>

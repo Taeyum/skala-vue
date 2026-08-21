@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { getWeatherText } from '@/utils/weatherTheme.js'
 import axios from 'axios'
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY
@@ -19,15 +20,15 @@ export const useForecastStore = defineStore('forecast', () => {
         params: { q: query, appid: API_KEY, units: 'metric', lang: 'kr' },
       })
       // 40개(5일 × 8슬롯) 중 앞쪽 12개(36시간)만 사용
-      const list = response.data.list.slice(0, 12).map((item) => ({
+        const list = response.data.list.slice(0, 12).map((item) => ({
         dt: item.dt,
         dtTxt: item.dt_txt,
         temp: Math.round(item.main.temp),
         humidity: item.main.humidity,
         windSpeed: item.wind.speed,
-        pop: Math.round(item.pop * 100), // 강수확률: 0~1 → %
+        pop: Math.round(item.pop * 100),
         icon: item.weather[0].icon,
-        status: item.weather[0].description,
+        status: getWeatherText(item.weather[0].id, item.weather[0].description),
       }))
       forecastCache.value[cityId] = list
       return list

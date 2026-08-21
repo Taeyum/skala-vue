@@ -21,18 +21,17 @@ const handleAdd = async () => {
 
 <template>
   <div class="city-adder">
-    <h3>➕ 도시 추가</h3>
     <div class="input-row">
       <input
         type="text"
         :value="keyword"
         @input="(e) => (keyword = e.target.value)"
         @keyup.enter="handleAdd"
-        placeholder="영문 도시명 입력 (예: Tokyo, London)"
+        placeholder="도시 추가 (예: 서울, Tokyo)"
         :disabled="isAdding"
       />
       <button class="btn-add" @click="handleAdd" :disabled="isAdding">
-        {{ isAdding ? '조회 중...' : '추가' }}
+        {{ isAdding ? '조회 중' : '추가' }}
       </button>
     </div>
     <p v-if="message" class="msg" :class="{ error: !isOk }">{{ message }}</p>
@@ -52,18 +51,22 @@ const handleAdd = async () => {
 
 .input-row input {
   flex: 1;
-  padding: 8px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  color: #2c3e50;
+  font-size: 14px;
 }
 
 .btn-add {
-  padding: 8px 16px;
-  border: 1px solid #42b883;
-  border-radius: 4px;
-  background: #42b883;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #3498db;
   color: #fff;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -73,9 +76,10 @@ const handleAdd = async () => {
 }
 
 .msg {
-  margin: 8px 0 0;
-  font-size: 13px;
-  color: #2c3e50;
+  position: absolute;
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #fff;
 }
 
 .msg.error {

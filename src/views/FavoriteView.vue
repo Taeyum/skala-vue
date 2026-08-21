@@ -1,99 +1,132 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRouter, RouterLink } from 'vue-router'
+import { useWeatherStore } from '@/stores/weatherStore.js'
 import { useFavoriteStore } from '@/stores/favoriteStore.js'
+import { useConfigStore } from '@/stores/configStore.js'
+import WeatherTile from '@/components/exercise/WeatherTile.vue'
 
 const router = useRouter()
+const weatherStore = useWeatherStore()
 const favoriteStore = useFavoriteStore()
+const configStore = useConfigStore()
 
-// 도시 이름 조회용 (홈과 동일 데이터 — Pinia 도입 전 임시)
-const cityNames = ref({
-  city_01: '서울',
-  city_02: '수원',
-  city_03: '부산',
-  city_04: '강릉',
-  city_05: '대전',
-  city_06: '제주',
-})
-
-// favoriteList의 참조 대상 변경
 const favoriteList = computed(() =>
-  favoriteStore.favoriteIds.map((id) => ({ id, name: cityNames.value[id] ?? '알 수 없는 지역' })),
+  weatherStore.weatherList.filter((c) => favoriteStore.isFavorite(c.id)),
 )
 
-const goDetail = (id) => {
-  router.push({ name: 'WeatherDetail', params: { cityId: id } })
+const convertTemp = (celsius) => {
+  if (celsius === null || celsius === undefined) return null
+  return configStore.unit === 'fahrenheit' ? Math.round((celsius * 9) / 5 + 32) : celsius
 }
+
+const handleDetail = (city) => router.push(`/weather/${city.id}`)
 </script>
 
 <template>
-  <div class="fav-box">
-    <h3>⭐ 즐겨찾기한 지역</h3>
+  <div class="fav-page">
+    <header class="card head">
+      <h1>⭐ 즐겨찾기</h1>
+      <p>{{ favoriteStore.favoriteCount }}개 지역을 즐겨찾기했습니다.</p>
+    </header>
 
-    <p v-if="favoriteList.length === 0" class="empty">
-      아직 즐겨찾기한 지역이 없습니다. 대시보드에서 ☆ 버튼을 눌러보세요.
-    </p>
+    <div v-if="favoriteList.length" class="card">
+      <TransitionGroup name="tile" tag="div" class="tile-grid">
+        <WeatherTile
+          v-for="item in favoriteList"
+          :key="item.id"
+          :city="item"
+          :display-temp="convertTemp(item.temp)"
+          :unit="configStore.unitSymbol"
+          :is-favorite="true"
+          @select="handleDetail"
+          @detail="handleDetail"
+          @toggle-favorite="favoriteStore.toggleFavorite"
+        />
+      </TransitionGroup>
+    </div>
 
-    <ul v-else class="fav-list">
-      <li v-for="item in favoriteList" :key="item.id">
-        <span class="name" @click="goDetail(item.id)">{{ item.name }}</span>
-        <button class="btn-remove" @click="favoriteStore.toggleFavorite(item.id)">해제</button>
-      </li>
-    </ul>
+    <div v-else class="card empty">
+      <p class="empty-icon">☆</p>
+      <p>아직 즐겨찾기한 지역이 없습니다.</p>
+      <RouterLink to="/" class="link-btn">대시보드로 이동</RouterLink>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.fav-box {
-  padding: 20px;
-  background: #f8f9fa;
+.fav-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card {
+  padding: 24px;
   border: 1px solid #e9ecef;
-  border-radius: 8px;
+  border-radius: 16px;
+  background: #fff;
   color: #2c3e50;
 }
 
-.fav-box h3,
-.fav-box p {
+.head h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
   color: #2c3e50;
+}
+
+.head p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .empty {
-  padding: 30px;
   text-align: center;
-  color: #868e96;
+  padding: 60px 24px;
 }
 
-.fav-list {
-  list-style: none;
-  padding: 0;
+.empty-icon {
+  margin: 0 0 12px !important;
+  font-size: 48px;
+  color: #dfe6e9;
 }
 
-.fav-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  margin-bottom: 8px;
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
+.empty p {
+  margin: 0;
+  color: #7f8c8d;
 }
 
-.name {
-  cursor: pointer;
-  font-weight: bold;
+.link-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: #3498db;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
 }
 
-.name:hover {
-  color: #3498db;
+.tile-move,
+.tile-enter-active,
+.tile-leave-active {
+  transition: all 0.45s cubic-bezier(0.55, 0, 0.1, 1);
 }
 
-.btn-remove {
-  padding: 4px 10px;
-  border: 1px solid #f7b731;
-  border-radius: 4px;
-  background: #fff;
-  color: #f7b731;
-  cursor: pointer;
+.tile-enter-from,
+.tile-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.tile-leave-active {
+  position: absolute;
 }
 </style>

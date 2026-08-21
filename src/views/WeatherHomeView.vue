@@ -1,14 +1,14 @@
 <script setup>
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '@/stores/configStore.js'
-import { useFavoriteStore } from '@/stores/favoriteStore';
-import { useWeatherStore } from '@/stores/weatherStore';
-import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue';
-import SearchBar from '@/components/exercise/SearchBar.vue';
-import WeatherCard from '@/components/exercise/WeatherCard.vue';
+import { useFavoriteStore } from '@/stores/favoriteStore.js'
+import { useWeatherStore } from '@/stores/weatherStore.js'
 import { getGradient } from '@/utils/weatherTheme.js'
+import WeatherHero from '@/components/exercise/WeatherHero.vue'
+import WeatherTile from '@/components/exercise/WeatherTile.vue'
 import CityAdder from '@/components/exercise/CityAdder.vue'
+import WeatherAnimation from '@/components/exercise/WeatherAnimation.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,49 +17,27 @@ const favoriteStore = useFavoriteStore()
 const weatherStore = useWeatherStore()
 
 const searchQuery = ref('')
+const selectedId = ref('')
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.search) {
     searchQuery.value = route.query.search
   }
   if (!weatherStore.hasData) {
-    weatherStore.fetchAll()
+    await weatherStore.fetchAll()
+  }
+  // 진입 시 첫 번째 도시를 자동 선택
+  if (!selectedId.value && weatherStore.hasData) {
+    selectedId.value = weatherStore.weatherList[0].id
   }
 })
 
-const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
-const selectedId = ref('')
+const filteredList = computed(() =>
+  weatherStore.weatherList.filter((item) => item.name.includes(searchQuery.value)),
+)
 
-
-const filteredWeatherList = computed(() => {
-    return weatherStore.weatherList.filter((item) => item.name.includes(searchQuery.value))
-})
-
-watch(selectedCityInfo, (newInfo, oldInfo) => {
-    console.log(`[watch] 상태바 변경: "${oldInfo}" => "${newInfo}"`)
-})
-
-watchEffect(() => {
-    console.log(`[watchEffect] 현재 검색어: "${searchQuery.value}"`)
-})
-
-// 검색어 변경을 주소창에 동기화 (히스토리를 더럽히지 않도록 replace 사용)
-watch(searchQuery, (newQuery) => {
-  router.replace({
-    query: newQuery ? { search: newQuery } : {},
-  })
-})
-
-const tempToWidth = (temp) => ((temp + 10) / 50) * 100 + '%'
-
-const convertTemp = (celsius) => {
-    if (celsius === null) return null
-    return configStore.unit === 'fahrenheit' ? Math.round((celsius * 9) / 5 + 32) : celsius
-
-}
-
-const sortedWeatherList = computed(() => {
-  const list = filteredWeatherList.value
+const sortedList = computed(() => {
+  const list = filteredList.value
   if (configStore.sortOrder === 'desc') {
     return list.toSorted((a, b) => (b.temp ?? -99) - (a.temp ?? -99))
   }
@@ -69,148 +47,212 @@ const sortedWeatherList = computed(() => {
   return list
 })
 
-const backgroundStyle = computed(() => {
-  const selected = weatherStore.weatherList.find((c) => c.id === selectedId.value)
-  return { background: getGradient(selected?.main) }
+const selectedCity = computed(() =>
+  weatherStore.weatherList.find((c) => c.id === selectedId.value),
+)
+
+const backgroundStyle = computed(() => ({
+  background: getGradient(selectedCity.value?.main),
+}))
+
+const convertTemp = (celsius) => {
+  if (celsius === null || celsius === undefined) return null
+  return configStore.unit === 'fahrenheit' ? Math.round((celsius * 9) / 5 + 32) : celsius
+}
+
+watchEffect(() => {
+  console.log(`[watchEffect] 현재 검색어: "${searchQuery.value}"`)
 })
 
-// 자식이 emit 으로 올려보낸 이벤트를 처리하는 핸들러
-const handleUpdateQuery = (value) => {
-  searchQuery.value = value
-}
+watch(searchQuery, (newQuery) => {
+  router.replace({ query: newQuery ? { search: newQuery } : {} })
+})
 
-const handleSelectCard = (city) => {
+const handleSelect = (city) => {
   selectedId.value = city.id
-  selectedCityInfo.value = `${city.name}이 선택되었습니다.`
 }
 
-const handleClickDetail = (city) => {
+const handleDetail = (city) => {
   router.push(`/weather/${city.id}`)
 }
 
-const handleRemoveCard = (cityId) => {
+const handleRemove = (cityId) => {
   weatherStore.removeCity(cityId)
-  // 삭제한 도시가 선택 상태였다면 초기화
   if (selectedId.value === cityId) {
-    selectedId.value = ''
-    selectedCityInfo.value = '카드를 클릭하거나 검색해 보세요.'
+    selectedId.value = weatherStore.weatherList[0]?.id ?? ''
   }
   if (favoriteStore.isFavorite(cityId)) {
-  favoriteStore.toggleFavorite(cityId)
-  } 
+    favoriteStore.toggleFavorite(cityId)
+  }
 }
 </script>
 
 <template>
-  <div class="dashboard-wrapper" :style="backgroundStyle">
-    <BaseDashboardCard>
-      <SearchBar :query="searchQuery" @update-query="handleUpdateQuery" />
-    </BaseDashboardCard>
+  <div class="dashboard" :style="backgroundStyle">
+    <WeatherAnimation :main="selectedCity?.main" />
+    <!-- ① 히어로 -->
+    <WeatherHero
+      :city="selectedCity"
+      :display-temp="convertTemp(selectedCity?.temp)"
+      :unit="configStore.unitSymbol"
+    />
 
-    <BaseDashboardCard>
-      <CityAdder />
-    </BaseDashboardCard>
-
-    <BaseDashboardCard>
-      <div class="list-head">
-        <h3>🏙️ 지역별 날씨 현황</h3>
-        <div class="head-buttons">
-          <button class="btn-sort" @click="configStore.toggleSort">
-            {{ configStore.sortLabel }}
-          </button>
-        </div>
+    <!-- ② 툴바 -->
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          :value="searchQuery"
+          @input="(e) => (searchQuery = e.target.value)"
+          placeholder="지역 검색"
+        />
       </div>
 
-      <p v-if="weatherStore.isLoading" class="state-msg">날씨 정보를 불러오는 중입니다...</p>
-        <p v-else-if="weatherStore.errorMessage" class="state-msg error">
-          {{ weatherStore.errorMessage }}
-        </p>  
+      <CityAdder class="adder" />
 
-      <p class="summary" v-if="weatherStore.hottestCity">
-        오늘 가장 더운 곳: <strong>{{ weatherStore.hottestCity.name }}</strong>
-        ({{ convertTemp(weatherStore.hottestCity.temp) }}{{ configStore.unitSymbol }})
-      </p>
+      <button class="btn-sort" @click="configStore.toggleSort">
+        {{ configStore.sortLabel }}
+      </button>
+    </div>
 
-      <WeatherCard
-        v-for="item in sortedWeatherList"
+    <!-- ③ 상태 표시 -->
+    <p v-if="weatherStore.isLoading" class="state-msg">날씨 정보를 불러오는 중입니다...</p>
+    <p v-else-if="weatherStore.errorMessage" class="state-msg error">
+      {{ weatherStore.errorMessage }}
+    </p>
+
+    <!-- ④ 타일 그리드 -->
+    <TransitionGroup v-else name="tile" tag="div" class="tile-grid">
+      <WeatherTile
+        v-for="item in sortedList"
         :key="item.id"
         :city="item"
         :display-temp="convertTemp(item.temp)"
         :unit="configStore.unitSymbol"
-        :icon="item.icon"
-        :gauge-width="item.temp !== null ? tempToWidth(item.temp) : '0%'"
         :is-selected="selectedId === item.id"
         :is-favorite="favoriteStore.isFavorite(item.id)"
         :can-remove="!item.id.startsWith('city_0')"
-        @select-card="handleSelectCard"
-        @click-detail="handleClickDetail"
+        @select="handleSelect"
+        @detail="handleDetail"
         @toggle-favorite="favoriteStore.toggleFavorite"
-        @remove-card="handleRemoveCard"
+        @remove="handleRemove"
       />
+    </TransitionGroup>
 
-      <p v-if="sortedWeatherList.length === 0" class="no-result">
-        검색 결과와 일치하는 도시가 없습니다.
-      </p>
-    </BaseDashboardCard>
-
-    <div class="status-bar">
-      {{ selectedCityInfo }}
-    </div>
+    <p v-if="!weatherStore.isLoading && sortedList.length === 0" class="state-msg">
+      검색 결과와 일치하는 지역이 없습니다.
+    </p>
   </div>
 </template>
 
 <style scoped>
-.dashboard-wrapper h3,
-.dashboard-wrapper p {
-  color: #2c3e50;
+.dashboard {
+  position: relative;
+  padding: 24px;
+  border-radius: 24px;
+  transition: background 0.8s ease;
 }
 
-.list-head {
+/* ── 툴바 ── */
+.toolbar {
+  position: relative;      
+  z-index: 1;  
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 20px 0;
 }
 
-.head-buttons {
-  display: flex;
-  gap: 8px;
+.search-box {
+  flex: 0 0 260px;
 }
 
-.btn-sort {
-  padding: 6px 12px;
-  border: 1px solid #42b883;
-  border-radius: 4px;
-  background: #fff;
-  color: #42b883;
-  cursor: pointer;
-}
 
-.summary {
-  margin: 8px 0 12px;
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 14px;
 }
 
-.no-result {
-  padding: 20px;
-  text-align: center;
-  color: #868e96;
+.search-box input {
+  width: 100%;
+  padding: 11px 14px 11px 38px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  color: #2c3e50;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.adder {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.btn-sort {
+  margin-left: auto;
+  padding: 11px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-sort:hover {
+  background: #fff;
+}
+
+/* ── 타일 그리드 ── */
+.tile-grid {
+  position: relative;      
+  z-index: 1; 
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* ── TransitionGroup 애니메이션 ── */
+.tile-move,
+.tile-enter-active,
+.tile-leave-active {
+  transition: all 0.45s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.tile-enter-from,
+.tile-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+}
+
+.tile-leave-active {
+  position: absolute;
 }
 
 .state-msg {
-  padding: 20px;
+  position: relative;      
+  z-index: 1;  
+  padding: 40px;
   text-align: center;
-  color: #868e96;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .state-msg.error {
-  color: #e74c3c;
-}
-.dashboard-wrapper {
-  padding: 20px;
-  border-radius: 12px;
-  transition: background 0.6s ease;
-}
-.status-bar {
-  background: rgba(232, 245, 233, 0.8);
+  color: #ffe0e0;
 }
 </style>

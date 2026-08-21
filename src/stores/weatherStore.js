@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { getWeatherText } from '@/utils/weatherTheme.js'
 import axios from 'axios'
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY
@@ -52,9 +53,12 @@ export const useWeatherStore = defineStore('weather', () => {
         name: city.name,
         query: city.query,
         temp: Math.round(data.main.temp),
-        status: data.weather[0].description,
+        feelsLike: Math.round(data.main.feels_like),
+        // API 한글 번역이 어색해 기상 코드로 직접 매핑
+        status: getWeatherText(data.weather[0].id, data.weather[0].description),
+        weatherId: data.weather[0].id,
         icon: data.weather[0].icon,
-        main: data.weather[0].main, // 'Clear' | 'Rain' | 'Clouds' ...
+        main: data.weather[0].main,
         humidity: data.main.humidity,
         windSpeed: data.wind.speed,
         clouds: data.clouds.all,
@@ -69,7 +73,9 @@ export const useWeatherStore = defineStore('weather', () => {
         name: city.name,
         query: city.query,
         temp: null,
+        feelsLike: null, 
         status: '조회 실패',
+        weatherId: null,
         icon: null,
         main: null,
         humidity: null,
