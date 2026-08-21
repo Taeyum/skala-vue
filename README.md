@@ -13,6 +13,10 @@ src/
 ├── App.vue                             네비게이션 바 + RouterView
 ├── router/
 │   └── index.js                        라우트 정의, 지연 로딩, Catch-all
+├── stores/                             Pinia 전역 상태 저장소
+│   ├── counter.js                      Code Challenge 실습용
+│   ├── configStore.js                  온도 단위, 정렬 기준
+│   └── favoriteStore.js                즐겨찾기 목록
 ├── views/                              페이지 단위 컴포넌트
 │   ├── WeatherHomeView.vue             메인 대시보드 (과제 3의 WeatherParent)
 │   ├── WeatherDetailView.vue           /weather/:cityId 상세 페이지
@@ -26,10 +30,12 @@ src/
 │   │   ├── SearchBar.vue
 │   │   ├── WeatherCard.vue
 │   │   ├── WeatherBadge.vue
-│   │   └── TempGauge.vue
+│   │   ├── TempGauge.vue
+│   │   └── UnitToggler.vue             온도 단위 전환 (Pinia 직접 사용)
 │   └── practices/
 │       ├── PracticeIndex.vue           실습 컴포넌트 모음
-│       └── basic/                      실습 컴포넌트
+│       ├── basic/                      실습 컴포넌트
+│       └── library/                    Pinia 실습
 └── assets/
 ```
 
@@ -48,6 +54,10 @@ Modern JavaScript, Vue 개요와 환경 구축, Vue Syntax 디렉티브까지 �
 **3일차 (p.145–195)**
 Composition API Hands on 과제를 진행하고, Vue Components와 Vue Router로 넘어갔습니다.
 Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로 만들었습니다.
+
+**4일차 (p.196–212)**
+Vue Router Hands on 과제를 진행하고 Pinia로 넘어갔습니다.
+Store의 state / getters / actions 구조와 `storeToRefs`를 실습했습니다.
 
 ---
 
@@ -80,7 +90,7 @@ Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로
 </details>
 
 <details>
-<summary><b>2026-08-21 — 과제 3은 별도 폴더로 분리</b></summary>
+<summary><b>2026-08-20 — 과제 3은 별도 폴더로 분리</b></summary>
 
 <br>
 
@@ -91,7 +101,7 @@ Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로
 </details>
 
 <details>
-<summary><b>2026-08-22 — v-if 페이지 전환을 라우터로 교체</b></summary>
+<summary><b>2026-08-21 — v-if 페이지 전환을 라우터로 교체</b></summary>
 
 <br>
 
@@ -100,6 +110,19 @@ Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로
 
 `App.vue`에서 `ref`도 `v-if`도 import 세 줄도 전부 사라졌습니다.
 어떤 화면이 존재하는지에 대한 정보가 `router/index.js` 한곳에 모이면서, `App.vue`는 모든 페이지에 공통으로 남는 껍데기만 갖게 됐습니다.
+
+</details>
+
+<details>
+<summary><b>2026-08-21 — provide/inject를 Pinia로 교체</b></summary>
+
+<br>
+
+과제 4에서 즐겨찾기 상태를 `App.vue`로 올리고 `provide`했는데, UI 컴포넌트가 상태 저장소 역할까지 하는 게 계속 걸렸습니다.
+`favoriteStore.js`로 옮기고 나니 `App.vue`에서 `ref`, `provide`, `watch`가 전부 사라지고 다시 껍데기가 됐습니다.
+
+`App.vue`가 여전히 스토어를 import하긴 하지만 성격이 다릅니다.
+전에는 상태를 소유했고 지금은 즐겨찾기 개수를 조회만 합니다. 상태의 주인이 스토어로 옮겨간 것이라고 이해했습니다.
 
 </details>
 
@@ -250,7 +273,7 @@ props가 6개로 늘어나긴 했지만, 자식이 판단하지 않고 받은 �
 
 </details>
 
-<details open>
+<details>
 <summary><b>과제 4 — Weather Router (Ch6 Hands on, p.196)</b></summary>
 
 <br>
@@ -308,5 +331,61 @@ Mock Data처럼 복사해두면 별을 켜도 목록에 반영이 안 되니, �
 상세 페이지의 도시 ID는 `params`로, 검색어는 `query`로 넣었습니다.
 리소스를 식별하는 값은 경로에, 필터나 상태는 쿼리에 두는 게 맞다고 판단했습니다.
 백엔드에서 `@PathVariable`과 `@RequestParam`을 나누던 기준과 같았습니다.
+
+</details>
+
+<details open>
+<summary><b>과제 5 — Weather Store (Ch7 Hands on, p.212)</b></summary>
+
+<br>
+
+| 요구사항 | 구현 |
+|---|---|
+| configStore | state `unit` / getters `unitSymbol` / actions `toggleUnit` |
+| 1. UnitToggler.vue | 스토어를 직접 사용. props·emits 없음 |
+| 2. Nav Bar 옆 배치 | `App.vue`의 네비게이션 우측 |
+| 3. 메인·상세 단위 적용 | 홈 `convertTemp`, 상세 `displayTemp` |
+
+### 추가로 넣은 것 (요구사항 4)
+
+| 대상 | 내용 |
+|---|---|
+| `configStore` 확장 | `sortOrder`(state) / `sortLabel`(getters) / `toggleSort`(actions) |
+| `favoriteStore` 신설 | `favoriteIds` / `favoriteCount`·`hasFavorite` / `toggleFavorite`·`isFavorite` |
+
+### 이렇게 판단했습니다
+
+**`provide`/`inject`로 우회했던 즐겨찾기를 Pinia로 옮겼습니다.**
+
+과제 4에서는 형제 라우트끼리 상태를 공유할 방법이 없어서 `favoriteIds`를 `App.vue`로 올리고 `provide`했습니다.
+동작은 했지만 화면을 그리는 컴포넌트가 전역 상태까지 들고 있는 구조가 어색했습니다.
+
+`favoriteStore.js`로 옮기니 `App.vue`에서 상태 선언과 `watch`가 전부 빠졌습니다.
+p.199 표에서 provide/inject와 Store를 비교해 둔 이유를 두 방식을 다 써보고 나서야 알게 됐습니다.
+"아무 곳에서나 수정 가능해서 추적이 어렵다"는 설명이, `App.vue`에 함수를 두고 두 화면에서 `inject`해 쓰던 상황과 정확히 맞았습니다.
+
+**`isFavorite`는 getter가 아니라 action으로 만들었습니다.**
+
+`favoriteCount`는 인자가 없어서 `computed`로 만들 수 있었는데, `isFavorite(cityId)`는 도시 ID를 받아야 했습니다.
+`computed`는 인자를 받을 수 없어서 일반 함수로 두었습니다.
+과제 2에서 `convertTemp`를 `computed`로 안 바꾸고 함수로 남겨둔 것과 같은 이유였습니다.
+
+**정렬을 원본 배열 수정에서 `sortOrder` 상태로 바꿨습니다.**
+
+기존 `sortByTemp`는 `weatherList`를 통째로 정렬된 배열로 덮어쓰고 있어서 원래 순서로 돌아갈 방법이 없었습니다.
+`configStore`에 `sortOrder`를 두고 `computed`로 파생시키니 원본이 그대로 남아 `none`으로 되돌릴 수 있게 됐습니다.
+`toSorted()`를 쓴 덕분에 이 전환이 쉬웠습니다.
+
+**단위 값은 `'C'`가 아니라 `'celsius'`로 바꿨습니다.**
+
+기존에는 `unit`이 `'C'`/`'F'`라서 `°${unit}`으로 기호를 만들 수 있었습니다.
+자료가 초기값을 `'celsius'`로 지정하면서 이 방식이 안 통하게 됐고, 그래서 `unitSymbol` getter가 필요해졌습니다.
+요구사항이 왜 굳이 getter를 요구했는지 이때 알았습니다.
+
+### 알고 있는 한계
+
+홈의 `convertTemp`와 상세의 `displayTemp`가 같은 화씨 변환 공식을 중복해서 갖고 있습니다.
+자료 p.212도 "유사한 코드가 중복됨 → Composable로 해결 가능(범위 제외)"이라고 짚어두었습니다.
+지금은 범위 밖이라 그대로 두었고, 변환 로직을 `useTemperature()` 같은 Composable로 묶는 것이 해결책이라고 이해했습니다.
 
 </details>
