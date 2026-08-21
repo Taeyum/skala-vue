@@ -10,17 +10,23 @@ SK AX Full-stack Engineering 3 — Frontend Framework: Vue.js 과정 실습 저�
 
 ```
 src/
-├── App.vue                             과제 / 실습 페이지 전환
+├── App.vue                             네비게이션 바 + RouterView
+├── router/
+│   └── index.js                        라우트 정의, 지연 로딩, Catch-all
+├── views/                              페이지 단위 컴포넌트
+│   ├── WeatherHomeView.vue             메인 대시보드 (과제 3의 WeatherParent)
+│   ├── WeatherDetailView.vue           /weather/:cityId 상세 페이지
+│   ├── WeatherAboutView.vue            서비스 소개
+│   ├── FavoriteView.vue                즐겨찾기 목록
+│   └── NotFoundView.vue                Catch-all Route
 ├── components/
-│   ├── exercise/
+│   ├── exercise/                       과제용 부품 컴포넌트
 │   │   ├── WeatherMockup.vue           과제 1, 2
-│   │   └── weather/                    과제 3
-│   │       ├── WeatherParent.vue       모든 반응형 데이터 보유
-│   │       ├── BaseDashboardCard.vue   slot 기반 공통 레이아웃
-│   │       ├── SearchBar.vue
-│   │       ├── WeatherCard.vue
-│   │       ├── WeatherBadge.vue
-│   │       └── TempGauge.vue
+│   │   ├── BaseDashboardCard.vue       slot 기반 공통 레이아웃
+│   │   ├── SearchBar.vue
+│   │   ├── WeatherCard.vue
+│   │   ├── WeatherBadge.vue
+│   │   └── TempGauge.vue
 │   └── practices/
 │       ├── PracticeIndex.vue           실습 컴포넌트 모음
 │       └── basic/                      실습 컴포넌트
@@ -39,11 +45,8 @@ Modern JavaScript, Vue 개요와 환경 구축, Vue Syntax 디렉티브까지 �
 이벤트 핸들링, 폼 바인딩, 스타일을 마무리하고 Composition API로 넘어갔습니다.
 `ref`/`reactive`, `computed`, `watch`(기본 / Multi-Source / Deep / reactive), `watchEffect`를 실습했습니다.
 
-**3일차 (p.145)**
-Composition API Hands on 과제를 진행했습니다.
-
-**4일차 (p.146–178)**
-Vue Components를 실습하고 Hands on 과제를 진행했습니다.
+**3일차 (p.145–195)**
+Composition API Hands on 과제를 진행하고, Vue Components와 Vue Router로 넘어갔습니다.
 Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로 만들었습니다.
 
 ---
@@ -84,6 +87,19 @@ Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로
 과제 3은 과제 2를 컴포넌트로 쪼개는 리팩토링이라 `WeatherMockup.vue`를 덮어쓸까 고민했습니다.
 그런데 과제 1, 2와 과제 3은 각각 별개의 제출물이고 강사님이 과제별로 확인하실 수도 있어서, `weather/` 하위 폴더를 만들고 원본은 그대로 두기로 했습니다.
 `App.vue`에 버튼을 하나 더 만들어서 두 버전을 번갈아 볼 수 있게 했습니다.
+
+</details>
+
+<details>
+<summary><b>2026-08-22 — v-if 페이지 전환을 라우터로 교체</b></summary>
+
+<br>
+
+첫날 README에 적어둔 대로 `App.vue`의 `v-if` 자리를 `<RouterView />`로 바꿨습니다.
+미리 컴포넌트를 분리해 둔 덕분에 `WeatherParent`를 `views/WeatherHomeView.vue`로 옮기고 라우트에 등록하는 것만으로 대부분 끝났습니다.
+
+`App.vue`에서 `ref`도 `v-if`도 import 세 줄도 전부 사라졌습니다.
+어떤 화면이 존재하는지에 대한 정보가 `router/index.js` 한곳에 모이면서, `App.vue`는 모든 페이지에 공통으로 남는 껍데기만 갖게 됐습니다.
 
 </details>
 
@@ -183,7 +199,7 @@ p.82에 정해진 상태 전환은 클래스, 연속적인 수치는 스타일�
 
 </details>
 
-<details open>
+<details>
 <summary><b>과제 3 — Weather Component (Ch5 Hands on, p.178)</b></summary>
 
 <br>
@@ -231,5 +247,66 @@ props가 6개로 늘어나긴 했지만, 자식이 판단하지 않고 받은 �
 `.weather-card` 기본 스타일은 전역 CSS에, 덮어쓰는 `is-hot` / `is-cool`은 `scoped`에 있어서 우선순위까지 꼬였습니다.
 같은 요소의 스타일이 두 파일에 흩어져 있는 게 원인이었고, 컴포넌트별로 한곳에 모으니 해결됐습니다.
 요구사항 5번이 스타일도 함께 분리하라고 한 이유를 이때 이해했습니다.
+
+</details>
+
+<details open>
+<summary><b>과제 4 — Weather Router (Ch6 Hands on, p.196)</b></summary>
+
+<br>
+
+과제 3의 컴포넌트 구조를 라우터 기반으로 전환했습니다.
+
+| 요구사항 | 구현 |
+|---|---|
+| 1. Router 설정 | 전 라우트 동적 import(지연 로딩), `/:pathMatch(.*)*` Catch-all |
+| 2. App.vue | `<RouterLink>` 네비게이션 바 + `<RouterView />` |
+| 3. WeatherHomeView | `WeatherParent` 승격. 상세보기를 `alert`에서 `router.push`로 변경 |
+| 4. WeatherDetailView | `route.params.cityId`로 `onMounted` 시점에 Mock Data 조회 |
+| 5. WeatherAboutView | 서비스 소개 + 대시보드 복귀 링크 |
+
+### 추가로 넣은 것 (요구사항 6)
+
+| 항목 | 내용 |
+|---|---|
+| `FavoriteView` | 즐겨찾기한 지역 목록. `provide`/`inject`로 라우트 간 상태 공유 |
+| 검색어 URL 동기화 | `?search=` 쿼리 스트링과 검색 상태를 양방향으로 맞춤 |
+| `/mockup`, `/practice` | 기존 과제·실습 화면도 라우트로 편입 |
+
+### 이렇게 판단했습니다
+
+**상세 페이지가 Mock Data를 따로 갖게 된 이유를 짚어봤습니다.**
+
+요구사항 4번이 "Mock Data를 **임시로** 활용"이라고 적혀 있는 게 처음엔 이상했습니다.
+홈 화면에 이미 `weatherList`가 있는데 왜 또 만드나 싶었는데, 만들다 보니 이유를 알게 됐습니다.
+
+홈과 상세는 부모-자식이 아니라 형제 라우트라서 서로의 데이터를 볼 수 있는 통로가 없습니다.
+5장에서 "형제끼리는 직접 대화하는 선이 없다"고 배운 게 실제 문제로 나타난 것이었습니다.
+"임시로"라는 단어는 7장 Pinia에서 이걸 해결한다는 뜻으로 읽혔습니다.
+
+**즐겨찾기 페이지에서는 `provide`/`inject`로 우회했습니다.**
+
+즐겨찾기 목록도 같은 문제를 만났습니다. `favoriteIds`가 홈 안에 있어서 다른 라우트에서 못 봅니다.
+Mock Data처럼 복사해두면 별을 켜도 목록에 반영이 안 되니, 이번엔 진짜로 상태를 공유해야 했습니다.
+
+`favoriteIds`를 `App.vue`로 올리고 `provide`한 뒤 두 화면에서 `inject`했습니다.
+5장에서 배운 방식이고, 자료가 "Pinia 때문에 사용 빈도가 높지 않다"고 적어둔 이유도 이때 이해했습니다.
+전역 상태 하나를 공유하려고 최상위 컴포넌트에 상태를 올리는 게 자연스럽지는 않았습니다.
+
+**검색어를 URL 쿼리에 담고, `push`가 아닌 `replace`로 반영했습니다.**
+
+검색어가 `ref`에만 있으면 새로고침할 때 날아가고 링크를 공유해도 검색 결과가 안 열립니다.
+`?search=` 쿼리로 옮기니 두 문제가 같이 해결됐습니다.
+
+처음에 `router.push`로 만들었더니 글자를 칠 때마다 히스토리가 쌓여서, 뒤로가기를 누르면 검색어가 한 글자씩 지워졌습니다.
+한글은 조합 단계마다 이벤트가 나서 더 심했습니다.
+`replace`로 바꾸니 현재 항목을 덮어써서 히스토리가 깨끗해졌습니다.
+6장에서 "뒤로 가기 불가"가 `replace`의 특징으로 나왔는데, 여기서는 그게 장점이 되는 경우였습니다.
+
+**`params`와 `query`를 용도에 따라 나눴습니다.**
+
+상세 페이지의 도시 ID는 `params`로, 검색어는 `query`로 넣었습니다.
+리소스를 식별하는 값은 경로에, 필터나 상태는 쿼리에 두는 게 맞다고 판단했습니다.
+백엔드에서 `@PathVariable`과 `@RequestParam`을 나누던 기준과 같았습니다.
 
 </details>
