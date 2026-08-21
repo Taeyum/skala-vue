@@ -10,7 +10,6 @@ import { formatLocalTime, formatLocalDate, getSunPhase } from '@/utils/localTime
 import { useForecastStore } from '@/stores/forecastStore.js'
 import { useAirStore } from '@/stores/airStore.js'
 import ForecastChart from '@/components/exercise/ForecastChart.vue'
-import WeatherAnimation from '@/components/exercise/WeatherAnimation.vue'
 import LifeBriefing from '@/components/exercise/LifeBriefing.vue'
 
 const route = useRoute()
@@ -178,7 +177,6 @@ onMounted(() => {
         @transitionend="pruneBelow(layer)"
       ></video>
       <div class="hero-overlay"></div>
-      <WeatherAnimation :main="city?.main" :night="night" />
 
       <RouterLink to="/" class="back-btn">
         <span class="back-arrow" aria-hidden="true">←</span>
@@ -214,7 +212,7 @@ onMounted(() => {
       </div>
 
       <!-- 시간별 예보 -->
-      <ForecastChart v-if="city" :list="forecastList" class="forecast-area" />
+      <ForecastChart v-if="city" :list="forecastList.slice(0, 12)" class="forecast-area" />
 
       <!-- Pexels 가이드라인: 크레딧 표기 (영상이 재생 중이면 영상 제작자, 아니면 사진작가) -->
       <a
