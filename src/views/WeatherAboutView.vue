@@ -22,7 +22,7 @@ const STACK = [
 <template>
   <div class="about">
     <section class="card intro">
-      <h1>🌤️ Weather Dashboard</h1>
+      <h1>날씨 대시보드</h1>
       <p>
         SK AX Full-stack Engineering 3 — Frontend Framework 과정에서 단계별로 만들어 온
         기상 관측 대시보드입니다. 강의 단원마다 배운 문법을 하나씩 얹어 확장했습니다.

@@ -26,7 +26,7 @@ const handleDetail = (city) => router.push(`/weather/${city.id}`)
 <template>
   <div class="fav-page">
     <header class="card head">
-      <h1>⭐ 즐겨찾기</h1>
+      <h1>즐겨찾기</h1>
       <p>{{ favoriteStore.favoriteCount }}개 지역을 즐겨찾기했습니다.</p>
     </header>
 
