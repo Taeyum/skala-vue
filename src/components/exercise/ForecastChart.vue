@@ -111,26 +111,35 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
   position: relative;
   z-index: 1;
   min-width: 0;
-  padding: 12px 0;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 10px;
-  backdrop-filter: blur(6px);
+  padding: var(--sp-3) 0;
+  background: var(--surface-dark);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--r-md);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
 }
 
 .tabs {
   display: flex;
   gap: 6px;
-  padding: 0 12px 10px;
+  padding: 0 var(--sp-3) 10px;
 }
 
 .tab {
-  padding: 4px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 16px;
+  padding: var(--sp-1) 14px;
+  border: 1px solid var(--surface-dark-border);
+  border-radius: var(--r-pill);
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.tab:hover {
+  color: #fff;
 }
 
 .tab.active {
@@ -143,7 +152,7 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
 .chart-scroll {
   overflow-x: auto;
   min-width: 0;
-  padding: 0 12px;
+  padding: 0 var(--sp-3);
 }
 
 .chart {
@@ -157,7 +166,7 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
 .cell {
   flex: 0 0 60px;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -182,9 +191,9 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
 }
 
 .empty {
-  padding: 20px;
+  padding: var(--sp-5);
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   color: rgba(255, 255, 255, 0.7);
 }
 </style>

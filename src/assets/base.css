@@ -50,6 +50,56 @@
   }
 }
 
+/* ── 디자인 토큰 (화면 전체 공통) ── */
+:root {
+  /* 색 */
+  --c-text: #2c3e50;
+  --c-text-sub: #7f8c8d;
+  --c-text-muted: #b2bec3;
+  --c-primary: #3498db;
+  --c-primary-soft: rgba(52, 152, 219, 0.1);
+  --c-accent: #f7b731;
+  --c-danger: #e74c3c;
+  --c-border: #e9ecef;
+  --c-divider: #f1f3f5;
+
+  /* 표면 — 유리 한 가지로 통일 */
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-border: rgba(255, 255, 255, 0.6);
+  --surface-blur: blur(12px);
+  --surface-dark: rgba(0, 0, 0, 0.35);
+  --surface-dark-border: rgba(255, 255, 255, 0.35);
+
+  /* 여백 (4px 배수) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  /* 모서리 */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* 그림자 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.14);
+
+  /* 폰트 위계 */
+  --fs-display: 44px;
+  --fs-h1: 24px;
+  --fs-h2: 16px;
+  --fs-body: 14px;
+  --fs-sm: 13px;
+  --fs-xs: 12px;
+}
+
 *,
 *::before,
 *::after {

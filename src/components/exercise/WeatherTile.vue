@@ -52,11 +52,13 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 16px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
+  padding: var(--sp-5) var(--sp-4) var(--sp-4);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition:
     transform 0.25s ease,
@@ -66,11 +68,11 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
 
 .tile:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 .tile.selected {
-  border-color: #3498db;
+  border-color: var(--c-primary);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
@@ -82,65 +84,65 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
 }
 
 .name {
-  font-size: 16px;
+  font-size: var(--fs-h2);
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .tile-actions {
   display: flex;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 
 .icon-btn {
   padding: 2px 6px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   background: transparent;
-  color: #b2bec3;
-  font-size: 14px;
+  color: var(--c-text-muted);
+  font-size: var(--fs-body);
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .icon-btn:hover {
-  color: #636e72;
+  color: var(--c-text-sub);
 }
 
 .icon-btn.active {
-  color: #f7b731;
+  color: var(--c-accent);
 }
 
 .tile-icon {
   width: 72px;
   height: 72px;
-  margin: 4px 0;
+  margin: var(--sp-1) 0;
 }
 
 .tile-temp {
   font-size: 34px;
   font-weight: 700;
   line-height: 1;
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .unit {
   font-size: 18px;
   font-weight: 400;
-  color: #7f8c8d;
+  color: var(--c-text-sub);
 }
 
 .tile-status {
   margin: 6px 0 10px;
-  font-size: 13px;
-  color: #7f8c8d;
+  font-size: var(--fs-sm);
+  color: var(--c-text-sub);
 }
 
 .tile-meta {
   display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: #95a5a6;
+  gap: var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--c-text-sub);
 }
 
 .btn-detail {
@@ -148,10 +150,10 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
   margin-top: 14px;
   padding: 7px;
   border: none;
-  border-radius: 8px;
-  background: rgba(52, 152, 219, 0.1);
-  color: #3498db;
-  font-size: 13px;
+  border-radius: var(--r-sm);
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+  font-size: var(--fs-sm);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;

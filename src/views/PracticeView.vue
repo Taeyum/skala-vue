@@ -184,34 +184,38 @@ const selectChapter = (key) => {
 
 <style scoped>
 .practice-page {
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 /* ── 페이지 헤더 ── */
 .page-head {
-  padding: 20px 24px;
-  margin-bottom: 20px;
-  border-radius: 16px;
-  background: #fff;
-  border: 1px solid #e9ecef;
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-6);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--shadow-md);
+  color: var(--c-text);
 }
 
 .page-head h1 {
-  margin: 0 0 4px;
-  font-size: 24px;
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-h1);
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .page-head p {
   margin: 0;
-  color: #7f8c8d;
-  font-size: 14px;
+  color: var(--c-text-sub);
+  font-size: var(--fs-sm);
 }
 
 .layout {
   display: flex;
-  gap: 20px;
+  gap: var(--sp-4);
   align-items: flex-start;
 }
 
@@ -228,12 +232,15 @@ const selectChapter = (key) => {
 .side-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  border: 1px solid #e9ecef;
+  gap: var(--sp-2);
+  padding: var(--sp-3) 14px;
+  border: 1px solid var(--surface-border);
   border-left: 3px solid transparent;
-  border-radius: 10px;
-  background: #fff;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--shadow-sm);
   text-align: left;
   cursor: pointer;
   transition: all 0.2s;
@@ -245,39 +252,39 @@ const selectChapter = (key) => {
 }
 
 .side-item.active {
-  border-color: #3498db;
-  border-left-color: #3498db;
-  background: #f0f8ff;
+  border-color: var(--c-primary);
+  border-left-color: var(--c-primary);
+  background: #fff;
 }
 
 .side-chapter {
   flex: 0 0 34px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  color: #3498db;
+  color: var(--c-primary);
 }
 
 .side-title {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 600;
   line-height: 1.35;
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .side-count {
   flex: 0 0 auto;
   min-width: 20px;
   padding: 2px 7px;
-  border-radius: 10px;
-  background: #f1f3f5;
-  font-size: 11px;
+  border-radius: var(--r-pill);
+  background: var(--c-divider);
+  font-size: var(--fs-xs);
   text-align: center;
-  color: #868e96;
+  color: var(--c-text-sub);
 }
 
 .side-item.active .side-count {
-  background: #3498db;
+  background: var(--c-primary);
   color: #fff;
 }
 
@@ -285,36 +292,40 @@ const selectChapter = (key) => {
 .content {
   flex: 1;
   min-width: 0;
-  padding: 20px 24px;
-  border-radius: 16px;
-  background: #fff;
-  border: 1px solid #e9ecef;
+  padding: var(--sp-6);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--shadow-md);
+  color: var(--c-text);
 }
 
 .content-head {
   padding-bottom: 14px;
   margin-bottom: 14px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--c-divider);
 }
 
 .content-head h2 {
   margin: 0 0 2px;
-  font-size: 18px;
+  font-size: var(--fs-h2);
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .content-head p {
   margin: 0;
-  font-size: 13px;
-  color: #7f8c8d;
+  font-size: var(--fs-sm);
+  color: var(--c-text-sub);
 }
 
 /* ── 아코디언 ── */
 .accordion {
   margin-bottom: 6px;
-  border: 1px solid #e9ecef;
-  border-radius: 10px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
   background: #fff;
   overflow: hidden;
   transition: border-color 0.2s;
@@ -325,8 +336,7 @@ const selectChapter = (key) => {
 }
 
 .accordion.open {
-  border-color: #3498db;
-  background: #fbfdff;
+  border-color: var(--c-primary);
 }
 
 .accordion-head {
@@ -334,7 +344,7 @@ const selectChapter = (key) => {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--sp-3) var(--sp-4);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -343,17 +353,17 @@ const selectChapter = (key) => {
 
 .acc-name {
   flex: 1;
-  font-size: 14px;
+  font-size: var(--fs-body);
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .acc-page {
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: #f1f3f5;
-  font-size: 11px;
-  color: #868e96;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-sm);
+  background: var(--c-divider);
+  font-size: var(--fs-xs);
+  color: var(--c-text-sub);
 }
 
 .acc-arrow {
@@ -361,7 +371,7 @@ const selectChapter = (key) => {
   text-align: center;
   font-size: 16px;
   font-weight: 700;
-  color: #3498db;
+  color: var(--c-primary);
   transition: transform 0.25s;
 }
 
@@ -370,8 +380,8 @@ const selectChapter = (key) => {
 }
 
 .accordion-body {
-  padding: 8px 16px 16px;
-  border-top: 1px solid #f1f3f5;
+  padding: var(--sp-2) var(--sp-4) var(--sp-4);
+  border-top: 1px solid var(--c-divider);
 }
 
 /* 실습 컴포넌트 내부 글자색 보정 */
@@ -382,15 +392,15 @@ const selectChapter = (key) => {
 .accordion-body :deep(li),
 .accordion-body :deep(label),
 .accordion-body :deep(span) {
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .accordion-body :deep(h2) {
-  font-size: 16px;
+  font-size: var(--fs-h2);
 }
 
 .accordion-body :deep(h3) {
-  font-size: 14px;
+  font-size: var(--fs-body);
 }
 
 /* 아코디언 펼침 애니메이션 */

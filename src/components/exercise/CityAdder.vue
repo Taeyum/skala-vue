@@ -40,34 +40,46 @@ const handleAdd = async () => {
 
 <style scoped>
 .city-adder h3 {
-  margin: 0 0 8px;
-  color: #2c3e50;
+  margin: 0 0 var(--sp-2);
+  color: var(--c-text);
 }
 
 .input-row {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .input-row input {
   flex: 1;
   padding: 11px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  color: #2c3e50;
-  font-size: 14px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  color: var(--c-text);
+  font-size: var(--fs-body);
+}
+
+.input-row input:focus {
+  outline: none;
+  border-color: var(--c-primary);
 }
 
 .btn-add {
   padding: 11px 18px;
   border: none;
-  border-radius: 12px;
-  background: #3498db;
+  border-radius: var(--r-md);
+  background: var(--c-primary);
   color: #fff;
+  font-size: var(--fs-body);
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add:hover:not(:disabled) {
+  background: #2e86c1;
 }
 
 .btn-add:disabled {
@@ -77,12 +89,12 @@ const handleAdd = async () => {
 
 .msg {
   position: absolute;
-  margin: 4px 0 0;
-  font-size: 12px;
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-xs);
   color: #fff;
 }
 
 .msg.error {
-  color: #e74c3c;
+  color: var(--c-danger);
 }
 </style>

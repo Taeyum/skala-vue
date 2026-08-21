@@ -66,39 +66,45 @@ const STACK = [
 .about {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 .card {
-  padding: 24px;
-  border: 1px solid #e9ecef;
-  border-radius: 16px;
-  background: #fff;
-  color: #2c3e50;
+  padding: var(--sp-6);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--shadow-md);
+  color: var(--c-text);
 }
 
 .card h1 {
-  margin: 0 0 8px;
-  font-size: 26px;
-  color: #2c3e50;
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--c-text);
 }
 
 .card h2 {
   margin: 0 0 14px;
-  font-size: 16px;
-  color: #2c3e50;
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  color: var(--c-text);
 }
 
 .card p {
   margin: 0;
-  color: #7f8c8d;
+  color: var(--c-text-sub);
+  font-size: var(--fs-body);
   line-height: 1.7;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 .list {
@@ -109,7 +115,7 @@ const STACK = [
 
 .list li {
   padding: 10px 0;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--c-divider);
 }
 
 .list li:last-child {
@@ -118,40 +124,40 @@ const STACK = [
 
 .item-name {
   display: block;
-  font-size: 14px;
+  font-size: var(--fs-body);
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .item-desc {
   display: block;
   margin-top: 2px;
-  font-size: 13px;
-  color: #7f8c8d;
+  font-size: var(--fs-sm);
+  color: var(--c-text-sub);
 }
 
-.note {
-  margin-top: 14px !important;
-  padding-top: 12px;
-  border-top: 1px solid #f1f3f5;
-  font-size: 12px;
+.card .note {
+  margin-top: 14px;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-divider);
+  font-size: var(--fs-xs);
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--sp-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .tags li {
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: #f0f8ff;
-  color: #3498db;
-  font-size: 13px;
+  padding: 6px var(--sp-3);
+  border-radius: var(--r-pill);
+  background: var(--c-primary-soft);
+  color: var(--c-primary);
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
 
@@ -163,18 +169,19 @@ const STACK = [
 
 .link-btn {
   padding: 10px 18px;
-  border: 1px solid #e9ecef;
-  border-radius: 10px;
-  color: #2c3e50;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  background: #fff;
+  color: var(--c-text);
   text-decoration: none;
-  font-size: 14px;
+  font-size: var(--fs-body);
   font-weight: 600;
   transition: all 0.2s;
 }
 
 .link-btn:hover {
-  border-color: #3498db;
-  color: #3498db;
+  border-color: var(--c-primary);
+  color: var(--c-primary);
   transform: translateY(-2px);
 }
 </style>

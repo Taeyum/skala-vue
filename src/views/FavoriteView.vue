@@ -58,60 +58,75 @@ const handleDetail = (city) => router.push(`/weather/${city.id}`)
 .fav-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 .card {
-  padding: 24px;
-  border: 1px solid #e9ecef;
-  border-radius: 16px;
-  background: #fff;
-  color: #2c3e50;
+  padding: var(--sp-6);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--shadow-md);
+  color: var(--c-text);
 }
 
 .head h1 {
-  margin: 0 0 4px;
-  font-size: 24px;
-  color: #2c3e50;
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  color: var(--c-text);
 }
 
 .head p {
   margin: 0;
-  color: #7f8c8d;
-  font-size: 14px;
+  color: var(--c-text-sub);
+  font-size: var(--fs-sm);
 }
 
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 .empty {
   text-align: center;
-  padding: 60px 24px;
+  padding: var(--sp-10) var(--sp-6);
 }
 
-.empty-icon {
-  margin: 0 0 12px !important;
+.empty .empty-icon {
+  margin: 0 0 var(--sp-3);
   font-size: 48px;
-  color: #dfe6e9;
+  color: var(--c-text-muted);
 }
 
 .empty p {
   margin: 0;
-  color: #7f8c8d;
+  color: var(--c-text-sub);
+  font-size: var(--fs-body);
 }
 
 .link-btn {
+  margin-top: var(--sp-5);
   display: inline-block;
-  margin-top: 20px;
-  padding: 10px 20px;
-  border-radius: 10px;
-  background: #3498db;
+  padding: 10px var(--sp-5);
+  border: none;
+  border-radius: var(--r-md);
+  background: var(--c-primary);
   color: #fff;
   text-decoration: none;
+  font-size: var(--fs-body);
   font-weight: 600;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.link-btn:hover {
+  background: #2e86c1;
+  transform: translateY(-2px);
 }
 
 .tile-move,

@@ -38,42 +38,43 @@ const favoriteStore = useFavoriteStore()
 <style scoped>
 .app-header {
   position: sticky;
-  top: 12px;
+  top: var(--sp-3);
   z-index: 100;
   max-width: 1400px;
-  margin: 12px auto 0;
-  padding: 0 16px;
+  margin: var(--sp-3) auto 0;
+  padding: 0 var(--sp-4);
 }
 
 .header-inner {
   display: flex;
   align-items: center;
-  gap: 32px;
-  padding: 12px 24px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  gap: var(--sp-8);
+  padding: var(--sp-3) var(--sp-6);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  box-shadow: var(--shadow-md);
 }
 
 .logo {
   font-size: 18px;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--c-text);
   text-decoration: none;
 }
 
 .nav {
   display: flex;
-  gap: 24px;
+  gap: var(--sp-6);
   flex: 1;
 }
 
 .nav-item {
   position: relative;
-  padding: 4px 0;
-  color: #7f8c8d;
+  padding: var(--sp-1) 0;
+  color: var(--c-text-sub);
   text-decoration: none;
   font-weight: 600;
   font-size: 15px;
@@ -81,11 +82,11 @@ const favoriteStore = useFavoriteStore()
 }
 
 .nav-item:hover {
-  color: #2c3e50;
+  color: var(--c-text);
 }
 
 .nav-item.router-link-exact-active {
-  color: #3498db;
+  color: var(--c-primary);
 }
 
 .nav-item.router-link-exact-active::after {
@@ -93,25 +94,26 @@ const favoriteStore = useFavoriteStore()
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -4px;      /* -15px → -4px */
+  bottom: -4px;
   height: 2px;
   border-radius: 2px;
-  background: #3498db;
+  background: var(--c-primary);
 }
 
 .badge-count {
   display: inline-block;
   min-width: 18px;
   padding: 1px 6px;
-  border-radius: 10px;
-  background: #f7b731;
+  border-radius: var(--r-pill);
+  background: var(--c-accent);
   color: #fff;
-  font-size: 11px;
+  font-size: var(--fs-xs);
+  line-height: 1.4;
 }
 
 .app-main {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 16px 32px 32px;
+  padding: var(--sp-4) var(--sp-8) var(--sp-8);
 }
 </style>

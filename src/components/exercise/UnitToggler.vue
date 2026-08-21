@@ -21,22 +21,26 @@ const configStore = useConfigStore()
 }
 
 .label {
-  font-size: 13px;
-  color: #7f8c8d;
+  font-size: var(--fs-sm);
+  color: var(--c-text-sub);
 }
 
 .btn-unit {
-  padding: 4px 12px;
-  border: 1px solid #3498db;
-  border-radius: 20px;
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--c-primary);
+  border-radius: var(--r-pill);
   background: #fff;
-  color: #3498db;
-  font-weight: bold;
+  color: var(--c-primary);
+  font-size: var(--fs-sm);
+  font-weight: 700;
   cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .btn-unit:hover {
-  background: #3498db;
+  background: var(--c-primary);
   color: #fff;
 }
 </style>

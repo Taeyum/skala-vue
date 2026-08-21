@@ -51,15 +51,15 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
 <style scoped>
 .hero {
   min-height: auto;
-  padding: 32px;
-  border-radius: 20px;
+  padding: var(--sp-8);
+  border-radius: var(--r-lg);
   color: #fff;
 }
 
 .hero-inner {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: var(--sp-10);
 }
 
 .hero-left {
@@ -68,14 +68,14 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
 
 .hero-label {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   color: rgba(255, 255, 255, 0.7);
   letter-spacing: 1px;
 }
 
 .hero-city {
-  margin: 6px 0 4px;
-  font-size: 44px;
+  margin: 6px 0 var(--sp-1);
+  font-size: var(--fs-display);
   font-weight: 700;
   color: #fff;
 }
@@ -111,7 +111,7 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
 .hero-right {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px 24px;
+  gap: 10px var(--sp-6);
 }
 
 .stat {
@@ -120,7 +120,7 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: rgba(255, 255, 255, 0.65);
 }
 

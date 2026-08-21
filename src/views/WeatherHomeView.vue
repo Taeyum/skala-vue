@@ -149,49 +149,50 @@ const handleRemove = (cityId) => {
 <style scoped>
 .dashboard {
   position: relative;
-  padding: 24px;
-  border-radius: 24px;
+  padding: var(--sp-6);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
   transition: background 0.8s ease;
 }
 
 /* ── 툴바 ── */
 .toolbar {
-  position: relative;      
-  z-index: 1;  
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin: 20px 0;
+  gap: var(--sp-3);
+  margin: var(--sp-5) 0;
 }
 
 .search-box {
   flex: 0 0 260px;
 }
 
-
 .search-icon {
   position: absolute;
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 14px;
+  font-size: var(--fs-body);
 }
 
 .search-box input {
   width: 100%;
   padding: 11px 14px 11px 38px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  color: #2c3e50;
-  font-size: 14px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  color: var(--c-text);
+  font-size: var(--fs-body);
   box-sizing: border-box;
 }
 
 .search-box input:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: var(--c-primary);
 }
 
 .adder {
@@ -203,12 +204,13 @@ const handleRemove = (cityId) => {
 .btn-sort {
   margin-left: auto;
   padding: 11px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  color: #2c3e50;
-  font-size: 14px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  backdrop-filter: var(--surface-blur);
+  -webkit-backdrop-filter: var(--surface-blur);
+  color: var(--c-text);
+  font-size: var(--fs-body);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -220,11 +222,11 @@ const handleRemove = (cityId) => {
 
 /* ── 타일 그리드 ── */
 .tile-grid {
-  position: relative;      
-  z-index: 1; 
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 /* ── TransitionGroup 애니메이션 ── */
@@ -245,9 +247,9 @@ const handleRemove = (cityId) => {
 }
 
 .state-msg {
-  position: relative;      
-  z-index: 1;  
-  padding: 40px;
+  position: relative;
+  z-index: 1;
+  padding: var(--sp-10);
   text-align: center;
   color: rgba(255, 255, 255, 0.9);
 }
