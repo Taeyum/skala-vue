@@ -86,3 +86,35 @@ export const getSunPhase = (sunrise, sunset, timezone, now = Date.now()) => {
     sunsetText: formatStamp(sunset, timezone),
   }
 }
+
+// 임의 시각(at, ms)의 낮·밤 — 오늘 일출·일몰을 그 날짜로 평행이동해서 비교한다
+// (예보는 최대 5일 뒤라 일출 시각 오차는 몇 분 수준)
+export const isNightAt = (sunrise, sunset, at) => {
+  if (!sunrise || !sunset) return false
+  const DAY = 86400
+  const t = at / 1000
+  const shift = Math.floor((t - sunrise) / DAY) * DAY
+  const rise = sunrise + shift
+  const set = sunset + shift
+  return t < rise || t >= set
+}
+
+// 예보 슬롯의 현지 라벨 { day: '오늘' | '내일' | '모레' | '금요일', time: '오후 3시' }
+export const describeSlot = (dt, timezone, now = Date.now()) => {
+  const d = getLocalDate(timezone, dt * 1000)
+  const today = getLocalDate(timezone, now)
+  const dayIndex = (x) =>
+    Math.floor(Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate()) / 86400000)
+  const diff = dayIndex(d) - dayIndex(today)
+  const day =
+    diff === 0
+      ? '오늘'
+      : diff === 1
+        ? '내일'
+        : diff === 2
+          ? '모레'
+          : `${WEEKDAYS[d.getUTCDay()]}요일`
+  const h = d.getUTCHours()
+  const time = h === 0 ? '자정' : h === 12 ? '정오' : h < 12 ? `오전 ${h}시` : `오후 ${h - 12}시`
+  return { day, time, diff, hour: h }
+}

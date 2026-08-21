@@ -19,11 +19,13 @@ export const useForecastStore = defineStore('forecast', () => {
       const response = await axios.get(BASE_URL, {
         params: { q: query, appid: API_KEY, units: 'metric', lang: 'kr' },
       })
-      // 40개(5일 × 8슬롯) 중 앞쪽 12개(36시간)만 사용
-        const list = response.data.list.slice(0, 12).map((item) => ({
+      // 40개(5일 × 8슬롯) 전부 저장. 차트는 앞 12개만, 타임라인은 전체를 쓴다
+      const list = response.data.list.map((item) => ({
         dt: item.dt,
         dtTxt: item.dt_txt,
         temp: Math.round(item.main.temp),
+        feelsLike: Math.round(item.main.feels_like),
+        clouds: item.clouds?.all ?? null,
         humidity: item.main.humidity,
         windSpeed: item.wind.speed,
         pop: Math.round(item.pop * 100),

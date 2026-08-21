@@ -8,6 +8,8 @@ defineProps({
   sunrise: { type: String, default: null },
   sunset: { type: String, default: null },
   night: { type: Boolean, default: false },
+  // 히어로 상단 작은 라벨 ("현재 선택한 지역" / "내일 오후 3시 예보")
+  label: { type: String, default: '현재 선택한 지역' },
 })
 
 const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
@@ -17,7 +19,7 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
   <section class="hero">
     <div v-if="city" class="hero-inner">
       <div class="hero-left">
-        <p class="hero-label">현재 선택한 지역</p>
+        <p class="hero-label">{{ label }}</p>
         <h1 class="hero-city">{{ city.name }}</h1>
         <p class="hero-status">
           {{ city.status }}
@@ -68,6 +70,11 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
       <slot name="extra"></slot>
     </div>
 
+    <!-- 히어로 하단 컨트롤 (시간여행 스트립) — 히어로를 조작하므로 같은 카드 안에 둔다 -->
+    <div v-if="city && $slots.footer" class="hero-footer">
+      <slot name="footer"></slot>
+    </div>
+
     <div v-if="!city" class="hero-empty">
       <p>아래 목록에서 지역을 선택해 주세요.</p>
     </div>
@@ -116,6 +123,18 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
   margin-top: var(--sp-6);
   padding-top: var(--sp-5);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-footer {
+  position: relative;
+  z-index: 1; /* 대시보드의 비·눈 애니메이션 레이어 위에 */
+  margin-top: var(--sp-5);
+  padding: var(--sp-3) var(--sp-4) var(--sp-2);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-center {

@@ -6,12 +6,13 @@ import { useFavoriteStore } from '@/stores/favoriteStore.js'
 import { useWeatherStore } from '@/stores/weatherStore.js'
 import { useForecastStore } from '@/stores/forecastStore.js'
 import { getGradient } from '@/utils/weatherTheme.js'
-import { formatLocalTime, formatStamp, isNight } from '@/utils/localTime.js'
+import { formatLocalTime, formatStamp, isNightAt, describeSlot } from '@/utils/localTime.js'
 import WeatherHero from '@/components/exercise/WeatherHero.vue'
 import WeatherTile from '@/components/exercise/WeatherTile.vue'
 import CityAdder from '@/components/exercise/CityAdder.vue'
 import WeatherAnimation from '@/components/exercise/WeatherAnimation.vue'
 import LifeBriefing from '@/components/exercise/LifeBriefing.vue'
+import TimeTravelBar from '@/components/exercise/TimeTravelBar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -21,7 +22,18 @@ const weatherStore = useWeatherStore()
 const forecastStore = useForecastStore()
 
 const searchQuery = ref('')
-const selectedForecast = ref([])
+
+// 도시별 예보 { city_01: [...40] } — 타임라인이 타일 전부를 바꿔야 해서 전 도시를 받아 둔다
+const forecastMap = ref({})
+const loadForecasts = async () => {
+  const missing = weatherStore.weatherList.filter((c) => !forecastMap.value[c.id])
+  const results = await Promise.all(missing.map((c) => forecastStore.fetchForecast(c.id, c.query)))
+  missing.forEach((c, i) => (forecastMap.value[c.id] = results[i]))
+}
+
+// ── 시간여행 ──
+// -1 = 지금(현재 날씨), 0~39 = 선택 도시 예보의 n번째 3시간 구간
+const timeIndex = ref(-1)
 
 // 현지 시각·낮밤 판정의 기준 "지금". 1분마다 갱신해 일몰을 지나면 화면이 따라 바뀐다
 const now = ref(Date.now())
@@ -31,7 +43,6 @@ onMounted(() => {
 })
 onUnmounted(() => clearInterval(clock))
 
-const cityIsNight = (city) => isNight(city?.sunrise, city?.sunset, now.value)
 const selectedId = ref('')
 
 onMounted(async () => {
@@ -45,14 +56,22 @@ onMounted(async () => {
   if (!selectedId.value && weatherStore.hasData) {
     selectedId.value = weatherStore.weatherList[0].id
   }
+  loadForecasts()
 })
+
+// 도시가 추가되면 그 도시 예보도 받는다
+watch(
+  () => weatherStore.weatherList.length,
+  () => loadForecasts(),
+)
 
 const filteredList = computed(() =>
   weatherStore.weatherList.filter((item) => item.name.includes(searchQuery.value)),
 )
 
 const sortedList = computed(() => {
-  const list = filteredList.value
+  // 정렬 기준 온도는 선택 구간 기준 — 시간을 옮기면 타일이 자리를 바꾸며 미끄러진다
+  const list = filteredList.value.map(projectCity)
   if (configStore.sortOrder === 'desc') {
     return list.toSorted((a, b) => (b.temp ?? -99) - (a.temp ?? -99))
   }
@@ -64,23 +83,55 @@ const sortedList = computed(() => {
 
 const selectedCity = computed(() => weatherStore.weatherList.find((c) => c.id === selectedId.value))
 
-// 선택 도시가 바뀌면 생활 브리핑용 예보를 조회 (스토어 캐시라 상세 진입 시 재사용)
-watch(
-  () => selectedCity.value?.id,
-  async (id) => {
-    if (!id) {
-      selectedForecast.value = []
-      return
-    }
-    selectedForecast.value = await forecastStore.fetchForecast(id, selectedCity.value.query)
-  },
-  { immediate: true },
+const selectedForecast = computed(() => forecastMap.value[selectedId.value] ?? [])
+
+// 선택한 구간 (없으면 "지금")
+const targetSlot = computed(() =>
+  timeIndex.value >= 0 ? (selectedForecast.value[timeIndex.value] ?? null) : null,
+)
+const targetMs = computed(() => (targetSlot.value ? targetSlot.value.dt * 1000 : now.value))
+
+// 도시 객체에 선택 구간의 예보 값을 덮어씌운 "그 시각의 도시"
+// 컴포넌트(WeatherHero·WeatherTile)는 지금인지 예보인지 모른 채 받은 대로 그린다
+const projectCity = (city) => {
+  if (!city || !targetSlot.value) return city
+  const slot = (forecastMap.value[city.id] ?? []).find((f) => f.dt === targetSlot.value.dt)
+  if (!slot) return city
+  return {
+    ...city,
+    temp: slot.temp,
+    feelsLike: slot.feelsLike,
+    status: slot.status,
+    icon: slot.icon,
+    main: slot.main,
+    humidity: slot.humidity,
+    windSpeed: slot.windSpeed,
+    clouds: slot.clouds ?? city.clouds,
+  }
+}
+
+const shownCity = computed(() => projectCity(selectedCity.value))
+const shownList = sortedList
+
+// 브리핑은 선택 구간부터의 예보로 계산 (지금이면 전체)
+const shownForecast = computed(() =>
+  timeIndex.value >= 0 ? selectedForecast.value.slice(timeIndex.value) : selectedForecast.value,
 )
 
-const selectedIsNight = computed(() => cityIsNight(selectedCity.value))
+const heroLabel = computed(() => {
+  if (!targetSlot.value) return '현재 선택한 지역'
+  const d = describeSlot(targetSlot.value.dt, selectedCity.value?.timezone ?? 0, now.value)
+  return `${d.day} ${d.time} 예보`
+})
+
+// 낮밤은 "그 시각" 기준 — 일몰 뒤 구간으로 드래그하면 화면이 밤이 된다
+const selectedIsNight = computed(() =>
+  isNightAt(selectedCity.value?.sunrise, selectedCity.value?.sunset, targetMs.value),
+)
+const tileIsNight = (city) => isNightAt(city?.sunrise, city?.sunset, targetMs.value)
 
 const backgroundStyle = computed(() => ({
-  background: getGradient(selectedCity.value?.main, selectedIsNight.value),
+  background: getGradient(shownCity.value?.main, selectedIsNight.value),
 }))
 
 const convertTemp = (celsius) => {
@@ -117,19 +168,30 @@ const handleRemove = (cityId) => {
 
 <template>
   <div class="dashboard" :style="backgroundStyle">
-    <WeatherAnimation :main="selectedCity?.main" :night="selectedIsNight" />
+    <WeatherAnimation :main="shownCity?.main" :night="selectedIsNight" />
     <!-- ① 히어로 -->
     <WeatherHero
-      :city="selectedCity"
-      :display-temp="convertTemp(selectedCity?.temp)"
+      :city="shownCity"
+      :display-temp="convertTemp(shownCity?.temp)"
       :unit="configStore.unitSymbol"
-      :local-time="formatLocalTime(selectedCity?.timezone, now)"
+      :label="heroLabel"
+      :local-time="formatLocalTime(selectedCity?.timezone, targetMs)"
       :sunrise="formatStamp(selectedCity?.sunrise, selectedCity?.timezone)"
       :sunset="formatStamp(selectedCity?.sunset, selectedCity?.timezone)"
       :night="selectedIsNight"
     >
       <template #extra>
-        <LifeBriefing :city="selectedCity" :forecast="selectedForecast" mode="hero" />
+        <LifeBriefing :city="shownCity" :forecast="shownForecast" mode="hero" />
+      </template>
+      <!-- 시간여행 스트립: 히어로 카드 하단 -->
+      <template #footer>
+        <TimeTravelBar
+          v-model="timeIndex"
+          :slots="selectedForecast"
+          :timezone="selectedCity?.timezone ?? 0"
+          :current="selectedCity"
+          :convert-temp="convertTemp"
+        />
       </template>
     </WeatherHero>
 
@@ -161,14 +223,14 @@ const handleRemove = (cityId) => {
     <!-- ④ 타일 그리드 -->
     <TransitionGroup v-else name="tile" tag="div" class="tile-grid">
       <WeatherTile
-        v-for="item in sortedList"
+        v-for="item in shownList"
         :key="item.id"
         :city="item"
         :display-temp="convertTemp(item.temp)"
         :unit="configStore.unitSymbol"
         :is-selected="selectedId === item.id"
         :is-favorite="favoriteStore.isFavorite(item.id)"
-        :night="cityIsNight(item)"
+        :night="tileIsNight(item)"
         :can-remove="!item.id.startsWith('city_0')"
         @select="handleSelect"
         @detail="handleDetail"
