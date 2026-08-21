@@ -17,6 +17,7 @@ npm install
 ```
 VITE_WEATHER_API_KEY=OpenWeatherMap API Key
 VITE_PEXELS_API_KEY=Pexels API Key
+VITE_PRIMEUI_LICENSE=PrimeUI Community License Key
 ```
 
 ```bash
@@ -29,7 +30,7 @@ npm run dev
 
 ```
 src/
-├── App.vue                             네비게이션 바 + RouterView
+├── App.vue                             sticky 헤더 + RouterView
 ├── router/
 │   └── index.js                        라우트 정의, 지연 로딩, Catch-all
 ├── stores/                             Pinia 전역 상태 저장소
@@ -41,28 +42,31 @@ src/
 │   ├── airStore.js                     대기질
 │   └── photoStore.js                   Pexels 배경 이미지
 ├── utils/
-│   └── weatherTheme.js                 날씨별 그라디언트 / 이미지 검색어 매핑
+│   └── weatherTheme.js                 그라디언트 / 이미지 검색어 / 기상 코드 한글 매핑
 ├── views/                              페이지 단위 컴포넌트
-│   ├── WeatherHomeView.vue             메인 대시보드
+│   ├── WeatherHomeView.vue             메인 대시보드 (히어로 + 타일 그리드)
 │   ├── WeatherDetailView.vue           /weather/:cityId 상세 페이지
 │   ├── WeatherAboutView.vue            서비스 소개
 │   ├── FavoriteView.vue                즐겨찾기 목록
+│   ├── PracticeView.vue                실습 모음 (챕터 탭 + 아코디언)
 │   └── NotFoundView.vue                Catch-all Route
 ├── components/
 │   ├── exercise/                       과제용 부품 컴포넌트
 │   │   ├── WeatherMockup.vue           과제 1, 2
 │   │   ├── BaseDashboardCard.vue       slot 기반 공통 레이아웃
 │   │   ├── SearchBar.vue
-│   │   ├── WeatherCard.vue
+│   │   ├── WeatherCard.vue             과제 3·4용 가로형 카드
 │   │   ├── WeatherBadge.vue
 │   │   ├── TempGauge.vue
 │   │   ├── UnitToggler.vue             온도 단위 전환 (Pinia 직접 사용)
 │   │   ├── ForecastChart.vue           시간별 예보 차트 (SVG)
-│   │   └── CityAdder.vue               Geocoding 기반 도시 추가
+│   │   ├── CityAdder.vue               Geocoding 기반 도시 추가
+│   │   ├── WeatherHero.vue             선택 지역 대형 표시
+│   │   ├── WeatherTile.vue             그리드용 세로형 타일
+│   │   └── WeatherAnimation.vue        날씨별 CSS 애니메이션 배경
 │   └── practices/
-│       ├── PracticeIndex.vue           실습 컴포넌트 모음
-│       ├── basic/                      실습 컴포넌트
-│       └── library/                    Pinia / Axios 실습
+│       ├── basic/                      Ch3 실습 컴포넌트
+│       └── library/                    Pinia / Axios / Element Plus 실습
 └── assets/
 ```
 
@@ -96,9 +100,9 @@ Modern JavaScript, Vue 개요와 환경 구축, Vue Syntax 디렉티브까지 �
 Composition API Hands on 과제를 진행하고, Vue Components와 Vue Router로 넘어갔습니다.
 Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로 만들었습니다.
 
-**4일차 (p.196–230)**
-Vue Router Hands on 과제를 진행하고 Pinia와 Axios로 넘어갔습니다.
-Store의 state / getters / actions 구조, `storeToRefs`, REST API CRUD 통신을 실습했습니다.
+**4일차 (p.196–249)**
+Vue Router Hands on 과제를 진행하고 Pinia, Axios, UI Library로 넘어갔습니다.
+Store의 state / getters / actions, `storeToRefs`, REST API CRUD 통신, Element Plus 컴포넌트를 실습했습니다.
 
 ---
 
@@ -177,6 +181,25 @@ Store의 state / getters / actions 구조, `storeToRefs`, REST API CRUD 통신�
 
 세 화면이 같은 배열을 보게 되니 상세 페이지에서 도시를 바꿔도, 목록에 새 도시를 추가해도 자동으로 반영됩니다.
 과제 4 README에 "7장 Pinia에서 해결될 것"이라고 적어둔 걸 이번에 실행한 셈입니다.
+
+</details>
+
+<details>
+<summary><b>2026-08-21 — 전역 CSS 정리와 레이아웃 재설계</b></summary>
+
+<br>
+
+화면 레이아웃, 구조 등 전면 재설계 했습니다.
+
+화면 폭을 넓히려다 보니 배경이 검게 남는 부분이 계속 생겼습니다.
+원인을 따라가 보니 배경을 정하는 곳이 `base.css`, `main.css`, `exercise.css` 세 군데로 흩어져 있었습니다.
+
+`body` 배경은 `base.css` 한 곳에서만 정하고 나머지는 지웠습니다.
+전역 `a` 태그 색과 hover 배경도 스캐폴딩 잔재였는데, 로고에 마우스를 올릴 때 각진 초록 박스가 뜨는 원인이었습니다.
+
+가장 큰 수확은 `body`의 글자색이었습니다.
+`var(--color-text)`가 OS 다크 모드에서 밝은 회색이 되는 바람에, 흰 카드를 만들 때마다 글자가 안 보여 매번 `color`를 다시 지정하고 있었습니다.
+전역에서 색을 고정하니 그 반복이 사라졌습니다.
 
 </details>
 
@@ -444,7 +467,7 @@ p.199 표에서 provide/inject와 Store를 비교해 둔 이유를 두 방식을
 
 </details>
 
-<details open>
+<details>
 <summary><b>과제 6 — Weather Axios (Ch8 Hands on, p.230)</b></summary>
 
 <br>
@@ -535,5 +558,94 @@ flex 아이템의 `min-width` 기본값이 `auto`여서 "내용물보다 작아�
 
 무료 티어의 5 Day Forecast는 3시간 간격이라 시간별 그래프의 촘촘함이 실제 날씨 서비스보다 덜합니다.
 1시간 간격은 유료 API에서만 제공됩니다.
+
+</details>
+
+<details open>
+<summary><b>과제 7 — Weather UI Library (Ch9 Hands on, p.249)</b></summary>
+
+<br>
+
+요구사항 1~3은 과제 6과 동일한 문구라 그대로 유지하고, "외부 UI Library를 선정하고 자유롭게 적용한다"는 첫 줄에 집중했습니다.
+
+| 항목 | 내용 |
+|---|---|
+| 선정한 라이브러리 | PrimeVue (Aura 프리셋) |
+| 실습용 | Element Plus — Ch9 Code Challenge 3종은 자료대로 유지 |
+| 레이아웃 | 전체 폭 전환, sticky 유리 헤더, 히어로 + 타일 그리드 |
+| 모션 | 날씨별 CSS 애니메이션 배경, `TransitionGroup` 타일 전환, hover 마이크로 인터랙션 |
+| 실습 페이지 | 챕터 탭 + 아코디언으로 재구성 |
+
+### 이렇게 판단했습니다
+
+**Element Plus 대신 PrimeVue를 골랐습니다.**
+
+자료 p.233이 "국내에서는 Element Plus의 점유율이 높고 학습 난이도가 가장 낮다"고 적어둔 걸 보고, 오히려 다른 걸 써보면 차별화가 되겠다고 생각했습니다.
+같은 표에서 PrimeVue를 "가장 트렌디하고 유연"하다고 평가한 것도 근거가 됐습니다.
+
+다만 Ch9 Code Challenge 3개는 Element Plus로 만들라는 실습이라 그대로 두었습니다.
+두 라이브러리가 한 프로젝트에 공존하게 되어 CSS 우선순위가 꼬일 수 있었는데, PrimeVue 설정의 `cssLayer` 옵션으로 레이어 순서를 명시해 해결했습니다.
+
+**설치 직후 "Invalid PrimeUI License" 배지가 떴습니다.**
+
+PrimeVue 컴포넌트 자체는 MIT지만 테마 패키지인 `@primeuix/themes`는 별도 라이선스였습니다.
+과제 제출물에 저 배지가 박혀 있으면 안 되겠다 싶어서, 무료 Community 등급을 등록해 키를 받고 적용했습니다.
+
+키도 저장소에 남기면 안 되니 API 키들과 같이 `.env.local`로 뺐습니다.
+
+**동적인 느낌은 라이브러리가 아니라 직접 만들어야 했습니다.**
+
+처음에는 UI 라이브러리를 바꾸면 화면이 살아날 줄 알았는데, 라이브러리가 주는 건 버튼과 인풋 같은 정적인 부품이었습니다.
+움직임은 Vue 내장 `<TransitionGroup>`과 CSS 애니메이션으로 직접 만들었습니다.
+
+`<TransitionGroup>`의 `move` 클래스가 가장 효과가 컸습니다.
+정렬 기준을 바꾸면 타일들이 자리를 바꾸며 미끄러지는데, 이건 라이브러리로는 못 하는 것이었습니다.
+사라지는 요소에 `position: absolute`를 주지 않으면 남은 타일이 툭 끊기며 자리를 채운다는 것도 이때 알았습니다.
+
+**애니메이션 입자는 `computed`로 미리 만들어 두었습니다.**
+
+빗줄기 60개의 위치와 속도를 `v-for` 안에서 `Math.random()`으로 뽑았더니, 리렌더링이 일어날 때마다 값이 새로 계산되어 비가 순간이동했습니다.
+`computed`로 한 번만 만들어 재사용하니 해결됐습니다.
+`ref`가 아니라 `computed`를 쓴 것은 이 값이 파생 데이터이고 바깥에서 바꿀 일이 없기 때문입니다.
+
+**메인은 세로 목록에서 히어로 + 그리드로 바꿨습니다.**
+
+화면 폭을 넓혔는데도 답답한 느낌이 남아 있었습니다.
+회색 박스 안에 흰 박스가 들어간 이중 껍데기 구조였고, 도시 카드가 한 줄에 하나씩 놓여 가로 공간을 낭비하고 있었습니다.
+
+선택한 지역을 위에 크게 띄우고 나머지를 타일 그리드로 깔았습니다.
+`grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))` 로 잡으니 미디어 쿼리 없이도 화면 폭에 따라 열 개수가 알아서 바뀌었습니다.
+
+기존 `WeatherCard`는 가로형이라 그리드에 맞지 않았지만, 과제 3·4의 결과물이기도 해서 지우지 않고 `WeatherTile`을 새로 만들었습니다.
+
+**API 한글 번역이 어색해서 기상 코드로 직접 매핑했습니다.**
+
+`lang=kr`로 받은 설명이 "실 비", "온흐림", "튼구름"처럼 어색했습니다.
+응답의 `weather[0].id`가 언어와 무관한 숫자 코드라는 걸 보고, 이걸 키로 삼아 한글 표를 만들었습니다.
+
+`description`을 키로 쓰면 언어 설정을 바꾸는 순간 매핑이 전부 깨지지만, 숫자 코드는 어느 언어로 받아도 같습니다.
+표에 없는 코드가 와도 화면이 비지 않도록 API 원문을 폴백으로 두었습니다.
+
+**실습 30개를 챕터 탭 + 아코디언으로 정리했습니다.**
+
+실습 컴포넌트가 30개를 넘어가면서 한 페이지에 나열하는 방식이 한계에 왔습니다.
+좌측에 챕터 목록, 우측에 해당 챕터의 실습을 아코디언으로 놓고 자료 페이지 번호를 배지로 달았습니다.
+
+`<component :is="...">` 로 컴포넌트를 데이터처럼 배열에 담아 관리했습니다.
+`v-if`로 펼친 것만 렌더링하니 타이머가 도는 실습이 백그라운드에서 계속 실행되는 문제도 같이 해결됐습니다.
+
+**전역 CSS를 정리하고 나서야 반복되던 문제가 사라졌습니다.**
+
+카드를 만들 때마다 다크 모드에서 글자가 안 보여 `color`를 다시 지정하고 있었습니다.
+원인은 `base.css`의 `body { color: var(--color-text) }` 였고, 이 변수가 OS 다크 모드에서 밝은 회색이 되고 있었습니다.
+
+배경과 글자색을 전역에서 고정하고, 스캐폴딩에 남아 있던 전역 `a` 스타일도 걷어냈습니다.
+로고에 마우스를 올릴 때 각진 초록 박스가 뜨던 것도 그 규칙 때문이었습니다.
+
+### 알고 있는 한계
+
+Element Plus와 PrimeVue가 함께 설치되어 있어 번들 크기가 커집니다.
+`cssLayer`로 충돌은 막았지만, 실제 서비스라면 하나로 통일하는 것이 맞습니다.
+과제에서는 Ch9 Code Challenge 결과물을 남겨야 해서 공존시켰습니다.
 
 </details>
