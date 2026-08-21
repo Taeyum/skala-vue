@@ -6,6 +6,25 @@ SK AX Full-stack Engineering 3 — Frontend Framework: Vue.js 과정 실습 저�
 
 ---
 
+## 실행 방법
+
+```bash
+npm install
+```
+
+프로젝트 루트에 `.env.local` 파일을 만들고 API 키를 입력합니다. (`.env.example` 참고)
+
+```
+VITE_WEATHER_API_KEY=OpenWeatherMap API Key
+VITE_PEXELS_API_KEY=Pexels API Key
+```
+
+```bash
+npm run dev
+```
+
+---
+
 ## 프로젝트 구조
 
 ```
@@ -16,9 +35,15 @@ src/
 ├── stores/                             Pinia 전역 상태 저장소
 │   ├── counter.js                      Code Challenge 실습용
 │   ├── configStore.js                  온도 단위, 정렬 기준
-│   └── favoriteStore.js                즐겨찾기 목록
+│   ├── favoriteStore.js                즐겨찾기 목록
+│   ├── weatherStore.js                 현재 날씨, 도시 추가/삭제
+│   ├── forecastStore.js                5일 예보
+│   ├── airStore.js                     대기질
+│   └── photoStore.js                   Pexels 배경 이미지
+├── utils/
+│   └── weatherTheme.js                 날씨별 그라디언트 / 이미지 검색어 매핑
 ├── views/                              페이지 단위 컴포넌트
-│   ├── WeatherHomeView.vue             메인 대시보드 (과제 3의 WeatherParent)
+│   ├── WeatherHomeView.vue             메인 대시보드
 │   ├── WeatherDetailView.vue           /weather/:cityId 상세 페이지
 │   ├── WeatherAboutView.vue            서비스 소개
 │   ├── FavoriteView.vue                즐겨찾기 목록
@@ -31,13 +56,29 @@ src/
 │   │   ├── WeatherCard.vue
 │   │   ├── WeatherBadge.vue
 │   │   ├── TempGauge.vue
-│   │   └── UnitToggler.vue             온도 단위 전환 (Pinia 직접 사용)
+│   │   ├── UnitToggler.vue             온도 단위 전환 (Pinia 직접 사용)
+│   │   ├── ForecastChart.vue           시간별 예보 차트 (SVG)
+│   │   └── CityAdder.vue               Geocoding 기반 도시 추가
 │   └── practices/
 │       ├── PracticeIndex.vue           실습 컴포넌트 모음
 │       ├── basic/                      실습 컴포넌트
-│       └── library/                    Pinia 실습
+│       └── library/                    Pinia / Axios 실습
 └── assets/
 ```
+
+---
+
+## 사용한 외부 API
+
+| API | 용도 |
+|---|---|
+| OpenWeatherMap — Current Weather | 도시별 현재 날씨, 아이콘 |
+| OpenWeatherMap — 5 Day / 3 Hour Forecast | 시간별 예보 차트 |
+| OpenWeatherMap — Air Pollution | 대기질(AQI), PM10 / PM2.5 |
+| OpenWeatherMap — Geocoding | 사용자 도시 추가 시 좌표·명칭 조회 |
+| Pexels — Photo Search | 날씨 상태에 맞는 상세 페이지 배경 이미지 |
+
+Pexels 가이드라인에 따라 상세 페이지 하단에 사진작가 크레딧과 원본 링크를 표기했습니다.
 
 ---
 
@@ -55,9 +96,9 @@ Modern JavaScript, Vue 개요와 환경 구축, Vue Syntax 디렉티브까지 �
 Composition API Hands on 과제를 진행하고, Vue Components와 Vue Router로 넘어갔습니다.
 Lifecycle Hooks, Props & Emits, Provide & Inject, Slot을 각각 컴포넌트로 만들었습니다.
 
-**4일차 (p.196–212)**
-Vue Router Hands on 과제를 진행하고 Pinia로 넘어갔습니다.
-Store의 state / getters / actions 구조와 `storeToRefs`를 실습했습니다.
+**4일차 (p.196–230)**
+Vue Router Hands on 과제를 진행하고 Pinia와 Axios로 넘어갔습니다.
+Store의 state / getters / actions 구조, `storeToRefs`, REST API CRUD 통신을 실습했습니다.
 
 ---
 
@@ -123,6 +164,19 @@ Store의 state / getters / actions 구조와 `storeToRefs`를 실습했습니다
 
 `App.vue`가 여전히 스토어를 import하긴 하지만 성격이 다릅니다.
 전에는 상태를 소유했고 지금은 즐겨찾기 개수를 조회만 합니다. 상태의 주인이 스토어로 옮겨간 것이라고 이해했습니다.
+
+</details>
+
+<details>
+<summary><b>2026-08-21 — 목 데이터를 실제 API로 교체</b></summary>
+
+<br>
+
+과제 4와 5에서 "Mock Data를 임시로" 두었던 부분을 전부 걷어냈습니다.
+홈과 상세, 즐겨찾기가 각자 갖고 있던 세 벌의 데이터가 `weatherStore` 하나로 합쳐졌습니다.
+
+세 화면이 같은 배열을 보게 되니 상세 페이지에서 도시를 바꿔도, 목록에 새 도시를 추가해도 자동으로 반영됩니다.
+과제 4 README에 "7장 Pinia에서 해결될 것"이라고 적어둔 걸 이번에 실행한 셈입니다.
 
 </details>
 
@@ -334,7 +388,7 @@ Mock Data처럼 복사해두면 별을 켜도 목록에 반영이 안 되니, �
 
 </details>
 
-<details open>
+<details>
 <summary><b>과제 5 — Weather Store (Ch7 Hands on, p.212)</b></summary>
 
 <br>
@@ -387,5 +441,99 @@ p.199 표에서 provide/inject와 Store를 비교해 둔 이유를 두 방식을
 홈의 `convertTemp`와 상세의 `displayTemp`가 같은 화씨 변환 공식을 중복해서 갖고 있습니다.
 자료 p.212도 "유사한 코드가 중복됨 → Composable로 해결 가능(범위 제외)"이라고 짚어두었습니다.
 지금은 범위 밖이라 그대로 두었고, 변환 로직을 `useTemperature()` 같은 Composable로 묶는 것이 해결책이라고 이해했습니다.
+
+</details>
+
+<details open>
+<summary><b>과제 6 — Weather Axios (Ch8 Hands on, p.230)</b></summary>
+
+<br>
+
+지금까지 하드코딩해 온 목 데이터를 실제 API 응답으로 교체하고, 화면을 확장했습니다.
+
+| 요구사항 | 구현 |
+|---|---|
+| 1. 실제 날씨 데이터 적용 | `weatherStore`에서 Current Weather API 호출, 홈·상세·즐겨찾기가 모두 이 데이터를 공유 |
+| 2. OpenWeatherMap API 추가 | 날씨 아이콘 / 5 Day Forecast / Air Pollution / Geocoding |
+| 3. 기타 외부 API 추가 | Pexels로 날씨 상태에 맞는 상세 페이지 배경 이미지 |
+
+### 화면별로 추가한 것
+
+| 화면 | 내용 |
+|---|---|
+| 홈 | 실시간 날씨, 날씨 아이콘, 선택 도시 기준 배경 그라디언트, 도시 추가·삭제 |
+| 상세 | 좌우 2단 레이아웃, Pexels 배경, 시간별 예보 차트(탭 4종), 대기질, 도시 간 이동 |
+
+### 이렇게 판단했습니다
+
+**6개 도시를 `Promise.all`로 한 번에 요청했습니다.**
+
+처음에는 반복문 안에서 `await`을 쓰려고 했는데, 그러면 앞 도시의 응답을 받아야 다음 요청이 나가서 6배가 걸립니다.
+서로 의존 관계가 없는 요청이라 1일차에 배운 `Promise.all`로 묶었습니다.
+개발자도구 Network 탭에서 요청 6개가 나란히 출발하는 걸 보고 차이를 확인했습니다.
+
+한 가지 더 신경 쓴 것은 `Promise.all`이 하나라도 실패하면 전체가 reject된다는 점이었습니다.
+도시 하나가 실패했다고 나머지 5개까지 못 보면 안 되니, 개별 조회 함수 안에서 `try/catch`로 잡고 빈 데이터를 반환하도록 했습니다.
+그러면 바깥 `Promise.all`은 항상 성공합니다.
+
+**같은 요청을 두 번 하지 않도록 스토어에서 캐싱했습니다.**
+
+홈 → 상세 → 홈으로 오갈 때마다 API를 다시 부르면 무료 티어 한도가 금방 찹니다.
+`onMounted`에서 `if (!hasData)` 로 검사해 이미 데이터가 있으면 건너뛰게 했습니다.
+
+예보·대기질·배경 이미지도 각 스토어에서 도시별, 검색어별로 캐싱했습니다.
+특히 배경 이미지는 날씨 상태가 몇 종류뿐이라 캐싱 효과가 컸습니다.
+
+**상세 페이지에서 `onMounted` 대신 `computed`로 도시를 찾았습니다.**
+
+과제 4에서는 `onMounted` 안에서 `route.params.cityId`로 도시를 찾았습니다.
+이번에 우측 패널에 다른 도시로 이동하는 목록을 만들면서 문제가 드러났습니다.
+같은 라우트에서 파라미터만 바뀌면 Vue Router가 컴포넌트를 재사용하기 때문에 `onMounted`가 다시 실행되지 않았습니다.
+
+`computed`로 바꾸니 `route.params.cityId`를 의존성으로 추적해서 자동으로 다시 계산됩니다.
+`watch`를 따로 걸 필요도 없어졌습니다.
+
+**API 키를 `.env.local`로 분리했습니다.**
+
+자료 p.224는 API 키를 코드에 직접 적어두는데, 과제 저장소가 Public이라 그대로 커밋하면 안 되겠다고 생각했습니다.
+`.env.local`은 `.gitignore`의 `*.local` 규칙에 걸려서 저장소에 올라가지 않습니다.
+
+다만 `VITE_` 접두사가 붙은 값은 빌드 결과물에 문자열로 박히기 때문에 브라우저에서 확인할 수 있습니다.
+완전히 감추는 것은 아니고, 저장소에 남기지 않아 봇 수집을 피하고 키를 교체하기 쉽게 만드는 정도라고 이해했습니다.
+정말로 감춰야 하는 키라면 백엔드를 거쳐야 한다는 것도 같이 알게 됐습니다.
+
+**예보 차트는 SVG `polyline`으로 직접 그렸습니다.**
+
+차트 라이브러리는 9장 범위라 쓰지 않았습니다.
+값의 최소·최대를 잡고 그 안에서 비율로 y좌표를 환산하는 방식인데, 과제 1에서 온도 게이지 너비를 계산할 때와 같은 발상이었습니다.
+다만 이번에는 범위가 고정값이 아니라 데이터에 따라 자동으로 정해집니다.
+
+탭을 4개 만들면서 `activeTab` 하나만 바꾸면 값 배열과 좌표가 연쇄적으로 다시 계산되도록 `computed`를 엮었습니다.
+강수확률이 모두 0%일 때 최대·최소가 같아져서 0으로 나누는 문제가 생겨, `max - min || 1` 로 방어했습니다.
+
+**Pexels는 키를 헤더로 보냅니다.**
+
+지금까지 다룬 API는 전부 키를 쿼리 스트링으로 보냈는데 Pexels는 `Authorization` 헤더를 씁니다.
+`axios.get(url, { headers: { ... } })` 형태로 config에 넣어 해결했습니다.
+p.226 표의 `axios.get(url, [config])` 형식이 이런 경우에 쓰인다는 걸 알게 됐습니다.
+
+사진 위에 흰 글자를 얹어야 해서 가독성이 걱정됐는데, 어두운 그라디언트 오버레이를 한 겹 덮어 해결했습니다.
+Pexels 가이드라인에 사진작가 크레딧 표기 조항이 있어서 우측 하단에 원본 링크와 함께 넣었습니다.
+
+**flex 안에서 넘치는 요소 때문에 레이아웃이 무너졌습니다.**
+
+예보 차트를 좌측 히어로 영역에 넣었더니 우측 패널이 찌그러졌습니다.
+`overflow-x: auto`를 줬는데도 스크롤이 생기지 않았습니다.
+
+flex 아이템의 `min-width` 기본값이 `auto`여서 "내용물보다 작아지지 않는다"는 것이 원인이었습니다.
+바깥 컨테이너부터 스크롤 영역까지 `min-width: 0`을 이어서 지정하니 해결됐습니다.
+
+### 알고 있는 한계
+
+추가한 도시는 새로고침하면 사라집니다. `weatherList`가 메모리에만 있기 때문입니다.
+7장 p.209의 `authStore`가 `localStorage`를 함께 쓰던 것처럼 동기화하면 해결되지만, 요구사항 범위가 아니라 그대로 두었습니다.
+
+무료 티어의 5 Day Forecast는 3시간 간격이라 시간별 그래프의 촘촘함이 실제 날씨 서비스보다 덜합니다.
+1시간 간격은 유료 API에서만 제공됩니다.
 
 </details>
