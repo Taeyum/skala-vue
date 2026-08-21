@@ -41,6 +41,9 @@ import SlotScopedParent from './component/SlotScopedParent.vue'
 import StoreCounter from './library/StoreCounter.vue'
 import AxiosWeather from './library/AxiosWeather.vue'
 import AxiosJson from './library/AxiosJson.vue'
+import ElementForm from './library/ElementForm.vue'
+import ElementProduct from './library/ElementProduct.vue'
+import ElementFeedback from './library/ElementFeedback.vue'
 </script>
 
 <template>
@@ -139,6 +142,13 @@ import AxiosJson from './library/AxiosJson.vue'
     <AxiosWeather />
     <hr />
     <AxiosJson />
+  
+    <h3 class="group">10. Element Plus</h3>
+    <ElementForm />
+    <hr />
+    <ElementProduct />
+    <hr />
+    <ElementFeedback />
   </div>
 </template>
 
