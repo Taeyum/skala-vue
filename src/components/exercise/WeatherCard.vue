@@ -43,7 +43,7 @@ const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
         @click="emit('select-card', city)"
     >
         <h4>{{ city.name }} ({{ city.status }})</h4>
-        <p>현재 기온: {{ displayTemp ?? '측정 불가' }}{{ city.temp === null ? '' : `°${unit}` }}</p>
+        <p>현재 기온: {{ displayTemp ?? '측정 불가' }}{{ city.temp === null ? '' : unit }}</p>
 
         <TempGauge v-if="city.temp !== null" :width="gaugeWidth" />
         <WeatherBadge :temp="city.temp" />

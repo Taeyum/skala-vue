@@ -1,9 +1,16 @@
 <script setup>
-import { ref, computed, watch, watchEffect, inject, onMounted } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
+import { useConfigStore } from '@/stores/configStore.js'
+import { useFavoriteStore } from '@/stores/favoriteStore';
 import BaseDashboardCard from '@/components/exercise/BaseDashboardCard.vue';
 import SearchBar from '@/components/exercise/SearchBar.vue';
 import WeatherCard from '@/components/exercise/WeatherCard.vue';
+
+const route = useRoute()
+const router = useRouter()
+const configStore = useConfigStore()
+const favoriteStore = useFavoriteStore()
 
 const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
@@ -24,13 +31,7 @@ onMounted(() => {
 
 const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 const selectedId = ref('')
-const unit = ref('C')
-const route = useRoute()
-const router = useRouter()
 
-// favoriteIds, toggleFavorite 선언과 watch는 삭제하고 inject로 대체
-const favoriteIds = inject('favoriteIds')
-const toggleFavorite = inject('toggleFavorite')
 
 const filteredWeatherList = computed(() => {
     return weatherList.value.filter((item) => item.name.includes(searchQuery.value))
@@ -51,21 +52,24 @@ watch(searchQuery, (newQuery) => {
   })
 })
 
-
-watch(unit, (newUnit, oldUnit) => {
-    console.log(`[watch] 온도 단위 변경: ${oldUnit} -> ${newUnit}`)
-})
-
 const tempToWidth = (temp) => ((temp + 10) / 50) * 100 + '%'
 
 const convertTemp = (celsius) => {
     if (celsius === null) return null
-    return unit.value === 'F' ? Math.round((celsius * 9) / 5 + 32) : celsius
+    return configStore.unit === 'fahrenheit' ? Math.round((celsius * 9) / 5 + 32) : celsius
+
 }
 
-const sortByTemp = () => {
-  weatherList.value = weatherList.value.toSorted((a, b) => (b.temp ?? -99) - (a.temp ?? -99))
-}
+const sortedWeatherList = computed(() => {
+  const list = filteredWeatherList.value
+  if (configStore.sortOrder === 'desc') {
+    return list.toSorted((a, b) => (b.temp ?? -99) - (a.temp ?? -99))
+  }
+  if (configStore.sortOrder === 'asc') {
+    return list.toSorted((a, b) => (a.temp ?? 99) - (b.temp ?? 99))
+  }
+  return list
+})
 
 const hottestCity = computed(() =>
   weatherList.value.filter((c) => c.temp !== null).toSorted((a, b) => b.temp - a.temp)[0],
@@ -96,33 +100,32 @@ const handleClickDetail = (city) => {
       <div class="list-head">
         <h3>🏙️ 지역별 날씨 현황</h3>
         <div class="head-buttons">
-          <button class="btn-sort" @click="sortByTemp">🌡️ 기온 높은 순 정렬</button>
-          <button class="btn-sort" @click="unit = unit === 'C' ? 'F' : 'C'">
-            {{ unit === 'C' ? '°F로 보기' : '°C로 보기' }}
+          <button class="btn-sort" @click="configStore.toggleSort">
+            {{ configStore.sortLabel }}
           </button>
         </div>
       </div>
 
       <p class="summary" v-if="hottestCity">
         오늘 가장 더운 곳: <strong>{{ hottestCity.name }}</strong>
-        ({{ convertTemp(hottestCity.temp) }}°{{ unit }})
+        ({{ convertTemp(hottestCity.temp) }}{{ configStore.unitSymbol }})
       </p>
 
       <WeatherCard
-        v-for="item in filteredWeatherList"
+        v-for="item in sortedWeatherList"
         :key="item.id"
         :city="item"
         :display-temp="convertTemp(item.temp)"
-        :unit="unit"
+        :unit="configStore.unitSymbol"
         :gauge-width="item.temp !== null ? tempToWidth(item.temp) : '0%'"
         :is-selected="selectedId === item.id"
-        :is-favorite="favoriteIds.includes(item.id)"
+        :is-favorite="favoriteStore.isFavorite(item.id)"
         @select-card="handleSelectCard"
         @click-detail="handleClickDetail"
-        @toggle-favorite="toggleFavorite"
+        @toggle-favorite="favoriteStore.toggleFavorite"
       />
 
-      <p v-if="filteredWeatherList.length === 0" class="no-result">
+      <p v-if="sortedWeatherList.length === 0" class="no-result">
         검색 결과와 일치하는 도시가 없습니다.
       </p>
     </BaseDashboardCard>

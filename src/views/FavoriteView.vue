@@ -1,10 +1,10 @@
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useFavoriteStore } from '@/stores/favoriteStore.js'
 
 const router = useRouter()
-const favoriteIds = inject('favoriteIds')
-const toggleFavorite = inject('toggleFavorite')
+const favoriteStore = useFavoriteStore()
 
 // 도시 이름 조회용 (홈과 동일 데이터 — Pinia 도입 전 임시)
 const cityNames = ref({
@@ -16,8 +16,9 @@ const cityNames = ref({
   city_06: '제주',
 })
 
+// favoriteList의 참조 대상 변경
 const favoriteList = computed(() =>
-  favoriteIds.value.map((id) => ({ id, name: cityNames.value[id] ?? '알 수 없는 지역' })),
+  favoriteStore.favoriteIds.map((id) => ({ id, name: cityNames.value[id] ?? '알 수 없는 지역' })),
 )
 
 const goDetail = (id) => {
@@ -36,7 +37,7 @@ const goDetail = (id) => {
     <ul v-else class="fav-list">
       <li v-for="item in favoriteList" :key="item.id">
         <span class="name" @click="goDetail(item.id)">{{ item.name }}</span>
-        <button class="btn-remove" @click="toggleFavorite(item.id)">해제</button>
+        <button class="btn-remove" @click="favoriteStore.toggleFavorite(item.id)">해제</button>
       </li>
     </ul>
   </div>

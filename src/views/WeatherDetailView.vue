@@ -1,9 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useConfigStore } from '@/stores/configStore.js'
 
 const route = useRoute()
 const router = useRouter()
+const configStore = useConfigStore()
 
 // 상세 화면 전용 Mock Data (7장 Pinia 도입 전까지 임시)
 const cityDetails = [
@@ -17,6 +19,15 @@ const cityDetails = [
 
 // 선택된 도시 객체
 const city = ref(null)
+
+const displayTemp = computed(() => {
+  const rawTemp = city.value?.temp // 원본 데이터는 섭씨 숫자
+  if (rawTemp === null || rawTemp === undefined) return null
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32)
+  }
+  return rawTemp
+})
 
 // Mount 시점에 cityId로 Mock Data에서 도시 객체 선택
 onMounted(() => {
@@ -35,7 +46,7 @@ const goBack = () => {
 
     <div v-if="city" class="info-panel">
       <p class="location">📍 지정 지역: {{ city.fullName }}</p>
-      <p>실시간 기온: {{ city.temp ?? '측정 불가' }}{{ city.temp === null ? '' : '°C' }}</p>
+      <p>실시간 기온: {{ displayTemp ?? '측정 불가' }}{{ displayTemp === null ? '' : configStore.unitSymbol }}</p>
       <p>기상 현황: {{ city.status }}</p>
       <p>대기 습도: {{ city.humidity ?? '-' }}{{ city.humidity === null ? '' : '%' }}</p>
       <p>현재 풍속: {{ city.windSpeed ?? '-' }}{{ city.windSpeed === null ? '' : 'm/s' }}</p>
