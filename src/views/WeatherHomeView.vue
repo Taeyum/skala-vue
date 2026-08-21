@@ -4,19 +4,23 @@ import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '@/stores/configStore.js'
 import { useFavoriteStore } from '@/stores/favoriteStore.js'
 import { useWeatherStore } from '@/stores/weatherStore.js'
+import { useForecastStore } from '@/stores/forecastStore.js'
 import { getGradient } from '@/utils/weatherTheme.js'
 import WeatherHero from '@/components/exercise/WeatherHero.vue'
 import WeatherTile from '@/components/exercise/WeatherTile.vue'
 import CityAdder from '@/components/exercise/CityAdder.vue'
 import WeatherAnimation from '@/components/exercise/WeatherAnimation.vue'
+import LifeBriefing from '@/components/exercise/LifeBriefing.vue'
 
 const route = useRoute()
 const router = useRouter()
 const configStore = useConfigStore()
 const favoriteStore = useFavoriteStore()
 const weatherStore = useWeatherStore()
+const forecastStore = useForecastStore()
 
 const searchQuery = ref('')
+const selectedForecast = ref([])
 const selectedId = ref('')
 
 onMounted(async () => {
@@ -47,8 +51,19 @@ const sortedList = computed(() => {
   return list
 })
 
-const selectedCity = computed(() =>
-  weatherStore.weatherList.find((c) => c.id === selectedId.value),
+const selectedCity = computed(() => weatherStore.weatherList.find((c) => c.id === selectedId.value))
+
+// 선택 도시가 바뀌면 생활 브리핑용 예보를 조회 (스토어 캐시라 상세 진입 시 재사용)
+watch(
+  () => selectedCity.value?.id,
+  async (id) => {
+    if (!id) {
+      selectedForecast.value = []
+      return
+    }
+    selectedForecast.value = await forecastStore.fetchForecast(id, selectedCity.value.query)
+  },
+  { immediate: true },
 )
 
 const backgroundStyle = computed(() => ({
@@ -95,7 +110,11 @@ const handleRemove = (cityId) => {
       :city="selectedCity"
       :display-temp="convertTemp(selectedCity?.temp)"
       :unit="configStore.unitSymbol"
-    />
+    >
+      <template #extra>
+        <LifeBriefing :city="selectedCity" :forecast="selectedForecast" mode="hero" />
+      </template>
+    </WeatherHero>
 
     <!-- ② 툴바 -->
     <div class="toolbar">
@@ -177,21 +196,34 @@ const handleRemove = (cityId) => {
   font-size: var(--fs-body);
 }
 
+/* 필터용 입력 — 도시 추가(강한 입력)와 구분되도록 테두리 없이 낮은 톤 */
 .search-box input {
   width: 100%;
   padding: 11px 14px 11px 38px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid transparent;
   border-radius: var(--r-md);
-  background: var(--surface);
+  background: rgba(255, 255, 255, 0.45);
   backdrop-filter: var(--surface-blur);
   -webkit-backdrop-filter: var(--surface-blur);
   color: var(--c-text);
   font-size: var(--fs-body);
   box-sizing: border-box;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.search-box input::placeholder {
+  color: rgba(44, 62, 80, 0.55);
+}
+
+.search-box input:hover {
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .search-box input:focus {
   outline: none;
+  background: var(--surface);
   border-color: var(--c-primary);
 }
 

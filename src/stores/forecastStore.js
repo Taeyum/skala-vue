@@ -28,6 +28,7 @@ export const useForecastStore = defineStore('forecast', () => {
         windSpeed: item.wind.speed,
         pop: Math.round(item.pop * 100),
         icon: item.weather[0].icon,
+        main: item.weather[0].main,
         status: getWeatherText(item.weather[0].id, item.weather[0].description),
       }))
       forecastCache.value[cityId] = list

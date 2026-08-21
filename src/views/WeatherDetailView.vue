@@ -10,6 +10,7 @@ import { useForecastStore } from '@/stores/forecastStore.js'
 import { useAirStore } from '@/stores/airStore.js'
 import ForecastChart from '@/components/exercise/ForecastChart.vue'
 import WeatherAnimation from '@/components/exercise/WeatherAnimation.vue'
+import LifeBriefing from '@/components/exercise/LifeBriefing.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -60,6 +61,32 @@ const goDetail = (cityId) => {
   router.push({ name: 'WeatherDetail', params: { cityId } })
 }
 
+// "다른 지역 보기" — 도시가 늘어나도 목록이 길어지지 않도록 6개씩 페이지로 나눈다
+const PAGE_SIZE = 6
+const cityPage = ref(0)
+const pageCount = computed(() =>
+  Math.max(1, Math.ceil(weatherStore.weatherList.length / PAGE_SIZE)),
+)
+const pagedCities = computed(() =>
+  weatherStore.weatherList.slice(cityPage.value * PAGE_SIZE, (cityPage.value + 1) * PAGE_SIZE),
+)
+const prevPage = () => {
+  cityPage.value = (cityPage.value - 1 + pageCount.value) % pageCount.value
+}
+const nextPage = () => {
+  cityPage.value = (cityPage.value + 1) % pageCount.value
+}
+
+// 현재 도시가 있는 페이지를 자동으로 펼친다 (도시 전환·새로고침 직후 포함)
+watch(
+  [() => route.params.cityId, () => weatherStore.weatherList.length],
+  () => {
+    const idx = weatherStore.weatherList.findIndex((c) => c.id === route.params.cityId)
+    if (idx >= 0) cityPage.value = Math.floor(idx / PAGE_SIZE)
+  },
+  { immediate: true },
+)
+
 // 도시가 바뀌면 날씨에 맞는 배경 이미지·영상을 다시 조회
 // 이미지를 먼저 띄우고, 영상은 준비되는 대로 그 위에 페이드인한다
 watch(
@@ -107,7 +134,6 @@ watch(
   },
   { immediate: true },
 )
-
 
 // 배경 스타일
 const heroStyle = computed(() =>
@@ -170,7 +196,13 @@ onMounted(() => {
       <ForecastChart v-if="city" :list="forecastList" class="forecast-area" />
 
       <!-- Pexels 가이드라인: 크레딧 표기 (영상이 재생 중이면 영상 제작자, 아니면 사진작가) -->
-      <a v-if="currentVideo" :href="currentVideo.link" target="_blank" rel="noopener" class="credit">
+      <a
+        v-if="currentVideo"
+        :href="currentVideo.link"
+        target="_blank"
+        rel="noopener"
+        class="credit"
+      >
         Video by {{ currentVideo.author }} on Pexels
       </a>
       <a v-else-if="photo" :href="photo.link" target="_blank" rel="noopener" class="credit">
@@ -181,21 +213,34 @@ onMounted(() => {
     <!-- ── 우측: 정보 패널 ── -->
     <aside class="panel">
       <div class="panel-block">
-        <h3 class="panel-title">다른 지역 보기</h3>
+        <div class="panel-head">
+          <h3 class="panel-title">다른 지역 보기</h3>
+          <div v-if="pageCount > 1" class="pager">
+            <button class="pager-btn" aria-label="이전" @click="prevPage">‹</button>
+            <span class="pager-info">{{ cityPage + 1 }} / {{ pageCount }}</span>
+            <button class="pager-btn" aria-label="다음" @click="nextPage">›</button>
+          </div>
+        </div>
         <ul class="city-list">
           <li
-            v-for="item in weatherStore.weatherList"
+            v-for="item in pagedCities"
             :key="item.id"
             :class="{ active: item.id === route.params.cityId }"
             @click="goDetail(item.id)"
           >
-            {{ item.name }}
+            <span class="city-name">{{ item.name }}</span>
+            <span class="city-temp">{{ item.temp ?? '--' }}°</span>
           </li>
         </ul>
       </div>
 
       <div v-if="city" class="panel-block">
-        <h3 class="panel-title">Weather Details</h3>
+        <h3 class="panel-title">생활 브리핑</h3>
+        <LifeBriefing :city="city" :forecast="forecastList" :air="air" />
+      </div>
+
+      <div v-if="city" class="panel-block">
+        <h3 class="panel-title">상세 정보</h3>
         <dl class="detail-list">
           <div class="detail-row">
             <dt>기온</dt>
@@ -410,27 +455,93 @@ onMounted(() => {
   color: #fff;
 }
 
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-3);
+}
+
+.panel-head .panel-title {
+  margin: 0;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.pager-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.pager-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.pager-info {
+  min-width: 36px;
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: rgba(255, 255, 255, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
 .city-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .city-list li {
-  padding: var(--sp-2) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
   color: rgba(255, 255, 255, 0.8);
-  font-size: var(--fs-body);
+  font-size: var(--fs-sm);
   cursor: pointer;
-  transition: color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .city-list li:hover {
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
 .city-list li.active {
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font-weight: 700;
+}
+
+.city-temp {
+  font-size: var(--fs-xs);
+  color: rgba(255, 255, 255, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
+.city-list li.active .city-temp {
+  color: #fff;
 }
 
 .detail-list {

@@ -19,7 +19,9 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
 
       <div class="hero-center">
         <img v-if="city.icon" :src="iconUrl(city.icon)" alt="" class="hero-icon" />
-        <span class="hero-temp">{{ displayTemp ?? '--' }}<span class="unit">{{ unit }}</span></span>
+        <span class="hero-temp"
+          >{{ displayTemp ?? '--' }}<span class="unit">{{ unit }}</span></span
+        >
       </div>
 
       <div class="hero-right">
@@ -42,7 +44,12 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
       </div>
     </div>
 
-    <div v-else class="hero-empty">
+    <!-- 생활 브리핑 등 부가 정보 (부모 스코프에서 채움) -->
+    <div v-if="city && $slots.extra" class="hero-extra">
+      <slot name="extra"></slot>
+    </div>
+
+    <div v-if="!city" class="hero-empty">
       <p>아래 목록에서 지역을 선택해 주세요.</p>
     </div>
   </section>
@@ -52,7 +59,7 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
 .hero {
   min-height: auto;
   padding: var(--sp-8);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md); /* 바깥 .dashboard(20px) 안에 있으므로 한 단계 작게 */
   color: #fff;
 }
 
@@ -84,6 +91,12 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
   margin: 0;
   font-size: 15px;
   color: rgba(255, 255, 255, 0.85);
+}
+
+.hero-extra {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-5);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .hero-center {
