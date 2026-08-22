@@ -62,6 +62,12 @@ export const PROVINCES = geo.features.map((f) => ({
   d: featureToPath(f),
 }))
 
+// 바다만 칠하는 path. 지도를 덮는 사각형에 모든 시도 링을 이어 붙이고 evenodd를 걸면
+// 육지가 뚫린 마스크가 된다. 입자 캔버스 위에 이걸 얹으면 바다로 나간 입자가 가려진다.
+// (캔버스에서 매 프레임 clip을 거는 것보다 훨씬 싸다 — 정적 path 하나면 끝난다)
+export const SEA_PATH =
+  `M-40,-40H${VIEW_W + 40}V${VIEW_H + 40}H-40Z` + PROVINCES.map((p) => p.d).join('')
+
 // ── 육지 판정 ──
 // 링을 화면 좌표로 미리 바꿔 두고 bbox도 함께 들고 있는다.
 // bbox로 먼저 거르면 섬이 많은 전남(61개 폴리곤)에서 대부분의 링을 건너뛴다

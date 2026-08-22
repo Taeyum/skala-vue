@@ -1,5 +1,5 @@
 <script setup>
-import { PROVINCES, VIEW_W, VIEW_H } from '@/utils/koreaMap.js'
+import { PROVINCES, SEA_PATH, VIEW_W, VIEW_H } from '@/utils/koreaMap.js'
 import RollingNumber from '@/components/exercise/RollingNumber.vue'
 
 defineProps({
@@ -39,18 +39,21 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
       />
     </svg>
 
-    <!-- 지도 위 오버레이 (바람 화살표 등) -->
-    <slot name="overlay"></slot>
+    <!-- 입자 흐름 캔버스. 마스킹 없이 통째로 그리고 바로 아래 바다 마스크로 가린다 -->
+    <slot name="flow"></slot>
 
-    <!-- 바람 화살표. 글리프를 북쪽으로 그려 두고 rotate만 걸면
+    <!-- 바다 마스크 + 바람 화살표.
+         화살표 글리프를 북쪽으로 그려 두고 rotate만 걸면
          SVG 회전(시계방향)과 나침반 방위각이 같은 규칙이라 방향이 맞는다 -->
     <svg
-      v-if="arrows.length"
       class="layer"
       :viewBox="`0 0 ${VIEW_W} ${VIEW_H}`"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >
+      <!-- 육지가 뚫린 마스크. 바다로 나간 입자를 덮는다 -->
+      <path :d="SEA_PATH" fill="#0e1622" fill-rule="evenodd" />
+
       <g
         v-for="(a, i) in arrows"
         :key="i"

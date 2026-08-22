@@ -15,7 +15,8 @@ import {
   VIEW_W,
   VIEW_H,
 } from '@/utils/koreaMap.js'
-import { toScreenVector, toBearing, speedOf, sampleWind } from '@/utils/windField.js'
+import { toScreenVector, toBearing, speedOf, sampleWind, buildWindGrid } from '@/utils/windField.js'
+import KoreaWindCanvas from '@/components/exercise/KoreaWindCanvas.vue'
 import KoreaMapStage from '@/components/exercise/KoreaMapStage.vue'
 import MapLegend from '@/components/exercise/MapLegend.vue'
 import TimeTravelBar from '@/components/exercise/TimeTravelBar.vue'
@@ -145,6 +146,7 @@ const ranking = computed(() =>
 
 // ── 바람 ──
 const showWind = ref(true)
+const showFlow = ref(true)
 
 // 관측 지점을 화면 벡터로 미리 바꿔 둔다.
 // 이후 계산에서는 삼각함수를 다시 쓰지 않는다
@@ -171,6 +173,12 @@ const arrows = computed(() => {
   })
 })
 
+// 입자가 매 프레임 17개 지점을 다시 계산하면 초당 수십만 번이 된다.
+// 격자에 미리 계산해 두고 입자는 여기서 값을 읽는다 (2ms면 다시 만든다)
+const windGrid = computed(() =>
+  showFlow.value && stations.value.length ? buildWindGrid(stations.value, VIEW_W, VIEW_H) : null,
+)
+
 // 선택 도시의 풍향 — 화살표와 같은 규칙으로 돌려야 둘이 어긋나지 않는다
 const selectedWind = computed(() => {
   const c = shownCity.value
@@ -190,7 +198,10 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
       <p class="caption">시도별 대표 1지점 기준</p>
       <span class="stamp">기준 {{ timeLabel }}</span>
       <button class="toggle" :class="{ on: showWind }" :aria-pressed="showWind" @click="showWind = !showWind">
-        바람
+        화살표
+      </button>
+      <button class="toggle" :class="{ on: showFlow }" :aria-pressed="showFlow" @click="showFlow = !showFlow">
+        흐름
       </button>
     </header>
 
@@ -203,7 +214,11 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
           :arrows="arrows"
           :active-code="activeCode"
           @select="select"
-        />
+        >
+          <template #flow>
+            <KoreaWindCanvas v-if="windGrid" :grid="windGrid" />
+          </template>
+        </KoreaMapStage>
 
         <MapLegend
           :unit="configStore.unitSymbol"
