@@ -179,12 +179,36 @@ const windGrid = computed(() =>
   showFlow.value && stations.value.length ? buildWindGrid(stations.value, VIEW_W, VIEW_H) : null,
 )
 
+// 기상 정보는 "북서풍"처럼 불어오는 방향으로 말하는 관례가 있어 방위 이름을 붙인다
+const COMPASS_16 = [
+  '북',
+  '북북동',
+  '북동',
+  '동북동',
+  '동',
+  '동남동',
+  '남동',
+  '남남동',
+  '남',
+  '남남서',
+  '남서',
+  '서남서',
+  '서',
+  '서북서',
+  '북서',
+  '북북서',
+]
+
 // 선택 도시의 풍향 — 화살표와 같은 규칙으로 돌려야 둘이 어긋나지 않는다
 const selectedWind = computed(() => {
   const c = shownCity.value
   if (!c || c.windSpeed === null || c.windDeg === null) return null
   const v = toScreenVector(c.windSpeed, c.windDeg)
-  return { bearing: toBearing(v.sx, v.sy), speed: c.windSpeed }
+  return {
+    bearing: toBearing(v.sx, v.sy),
+    speed: c.windSpeed,
+    fromLabel: COMPASS_16[Math.round(c.windDeg / 22.5) % 16],
+  }
 })
 
 const select = (cityId) => (selectedId.value = cityId)
@@ -278,7 +302,9 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
           <div v-if="selectedWind" class="wind-row">
             <svg class="compass" viewBox="-14 -14 28 28" aria-hidden="true">
               <circle r="12" fill="none" stroke="rgba(255,255,255,0.25)" />
-              <g :style="{ transform: `rotate(${selectedWind.bearing}deg)` }" class="needle">
+              <!-- CSS transform은 transform-box가 viewBox의 음수 원점을 반영하지 않아
+                   회전축이 어긋난다. 지도 화살표와 같이 SVG 속성으로 돌린다 (기준점이 0,0) -->
+              <g class="needle" :transform="`rotate(${selectedWind.bearing})`">
                 <path d="M0,-8 L0,7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
                 <path
                   d="M-3,-4 L0,-9 L3,-4"
@@ -290,9 +316,9 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
                 />
               </g>
             </svg>
-            <span class="wind-text"
-              >바람이 가는 방향 · {{ Math.round(selectedWind.speed) }}m/s</span
-            >
+            <!-- 풍속은 위 패널에 이미 있으므로 여기서는 방위만 말한다.
+                 반올림한 값을 또 적으면 같은 화면에서 2.06과 2가 함께 보인다 -->
+            <span class="wind-text">{{ selectedWind.fromLabel }}풍 · 화살표는 가는 쪽</span>
           </div>
 
           <button class="btn-detail" @click="goDetail">상세보기 →</button>
@@ -438,7 +464,6 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
 }
 
 .needle {
-  transform-origin: center;
   transition: transform var(--dur-3) var(--ease-in-out);
 }
 
