@@ -4,6 +4,10 @@ SK AX Full-stack Engineering 3 — Frontend Framework: Vue.js 과정 실습 저�
 
 강의에서 배운 문법을 하나씩 실습 컴포넌트로 만들고, 단원별 Hands on 과제를 구현하고 있습니다.
 
+**배포 주소 → [skala-vue-taeyum.vercel.app](https://skala-vue-taeyum.vercel.app)**
+
+`main` 브랜치에 푸시하면 Vercel이 자동으로 다시 배포합니다.
+
 ---
 
 ## 실행 방법
