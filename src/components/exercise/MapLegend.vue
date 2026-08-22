@@ -31,7 +31,12 @@ const ticks = computed(() =>
         <svg class="bar" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <linearGradient id="tempScale" x1="0" y1="0" x2="1" y2="0">
-              <stop v-for="s in gradientStops" :key="s.offset" :offset="`${s.offset}%`" :stop-color="s.color" />
+              <stop
+                v-for="s in gradientStops"
+                :key="s.offset"
+                :offset="`${s.offset}%`"
+                :stop-color="s.color"
+              />
             </linearGradient>
           </defs>
           <rect x="0" y="0" width="100" height="8" fill="url(#tempScale)" rx="1" />

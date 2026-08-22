@@ -197,10 +197,20 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
       <h1 class="title">전국 날씨 지도</h1>
       <p class="caption">시도별 대표 1지점 기준</p>
       <span class="stamp">기준 {{ timeLabel }}</span>
-      <button class="toggle" :class="{ on: showWind }" :aria-pressed="showWind" @click="showWind = !showWind">
+      <button
+        class="toggle"
+        :class="{ on: showWind }"
+        :aria-pressed="showWind"
+        @click="showWind = !showWind"
+      >
         화살표
       </button>
-      <button class="toggle" :class="{ on: showFlow }" :aria-pressed="showFlow" @click="showFlow = !showFlow">
+      <button
+        class="toggle"
+        :class="{ on: showFlow }"
+        :aria-pressed="showFlow"
+        @click="showFlow = !showFlow"
+      >
         흐름
       </button>
     </header>
@@ -246,9 +256,22 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
           </p>
 
           <dl class="sum-stats">
-            <div><dt>체감</dt><dd><RollingNumber :value="convertTemp(shownCity.feelsLike)" />{{ configStore.unitSymbol }}</dd></div>
-            <div><dt>습도</dt><dd><RollingNumber :value="shownCity.humidity" />%</dd></div>
-            <div><dt>풍속</dt><dd><RollingNumber :value="shownCity.windSpeed" />m/s</dd></div>
+            <div>
+              <dt>체감</dt>
+              <dd>
+                <RollingNumber :value="convertTemp(shownCity.feelsLike)" />{{
+                  configStore.unitSymbol
+                }}
+              </dd>
+            </div>
+            <div>
+              <dt>습도</dt>
+              <dd><RollingNumber :value="shownCity.humidity" />%</dd>
+            </div>
+            <div>
+              <dt>풍속</dt>
+              <dd><RollingNumber :value="shownCity.windSpeed" />m/s</dd>
+            </div>
           </dl>
 
           <!-- 지도 화살표와 같은 각도를 쓰므로 둘이 늘 같은 방향을 가리킨다 -->
@@ -257,10 +280,19 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
               <circle r="12" fill="none" stroke="rgba(255,255,255,0.25)" />
               <g :style="{ transform: `rotate(${selectedWind.bearing}deg)` }" class="needle">
                 <path d="M0,-8 L0,7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
-                <path d="M-3,-4 L0,-9 L3,-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                <path
+                  d="M-3,-4 L0,-9 L3,-4"
+                  stroke="#fff"
+                  stroke-width="1.8"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </g>
             </svg>
-            <span class="wind-text">바람이 가는 방향 · {{ Math.round(selectedWind.speed) }}m/s</span>
+            <span class="wind-text"
+              >바람이 가는 방향 · {{ Math.round(selectedWind.speed) }}m/s</span
+            >
           </div>
 
           <button class="btn-detail" @click="goDetail">상세보기 →</button>
@@ -269,18 +301,23 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
         <section class="card rank">
           <h3 class="rank-title">기온 순위</h3>
           <ul class="rank-list">
-            <li
-              v-for="(city, i) in ranking"
-              :key="city.id"
-              :class="{ selected: city.id === selectedId }"
-              @click="select(city.id)"
-            >
-              <span class="rank-no">{{ i + 1 }}</span>
-              <span class="rank-swatch" :style="{ background: getTempColor(city.temp, cityIsNight(city)) }"></span>
-              <span class="rank-name">{{ city.name }}</span>
-              <span class="rank-temp">
-                <RollingNumber :value="convertTemp(city.temp)" />{{ configStore.unitSymbol }}
-              </span>
+            <li v-for="(city, i) in ranking" :key="city.id">
+              <button
+                class="rank-row"
+                :class="{ selected: city.id === selectedId }"
+                :aria-current="city.id === selectedId"
+                @click="select(city.id)"
+              >
+                <span class="rank-no">{{ i + 1 }}</span>
+                <span
+                  class="rank-swatch"
+                  :style="{ background: getTempColor(city.temp, cityIsNight(city)) }"
+                ></span>
+                <span class="rank-name">{{ city.name }}</span>
+                <span class="rank-temp">
+                  <RollingNumber :value="convertTemp(city.temp)" />{{ configStore.unitSymbol }}
+                </span>
+              </button>
             </li>
           </ul>
         </section>
@@ -529,23 +566,34 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
   gap: 2px;
 }
 
-.rank-list li {
+.rank-row {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+  width: 100%;
   padding: 5px var(--sp-2);
+  border: none;
   border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
   font-size: var(--fs-sm);
+  font-family: inherit;
+  text-align: left;
   cursor: pointer;
   transition: background var(--dur-2) var(--ease-out);
 }
 
-.rank-list li:hover {
+.rank-row:hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.rank-list li.selected {
+.rank-row.selected {
   background: rgba(52, 152, 219, 0.32);
+}
+
+.rank-row:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 
 .rank-no {
@@ -580,6 +628,7 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
     flex: 1 1 auto;
     width: 100%;
     max-width: 520px;
+    margin: 0 auto;
   }
 }
 </style>

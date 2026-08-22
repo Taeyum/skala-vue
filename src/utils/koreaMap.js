@@ -42,18 +42,13 @@ const toPolygons = (geometry) =>
 const ringToPath = (ring) =>
   ring
     .map(
-      ([lon, lat], i) =>
-        `${i ? 'L' : 'M'}${projectX(lon).toFixed(1)},${projectY(lat).toFixed(1)}`,
+      ([lon, lat], i) => `${i ? 'L' : 'M'}${projectX(lon).toFixed(1)},${projectY(lat).toFixed(1)}`,
     )
     .join('') + 'Z'
 
 // 한 시도의 모든 링(바깥 + 구멍)을 이어 붙인 하나의 d 문자열.
 // 전남 안의 광주처럼 도려낸 구멍은 fill-rule="evenodd"가 알아서 처리한다
-const featureToPath = (feature) =>
-  toPolygons(feature.geometry)
-    .flat()
-    .map(ringToPath)
-    .join('')
+const featureToPath = (feature) => toPolygons(feature.geometry).flat().map(ringToPath).join('')
 
 // 모듈이 처음 로드될 때 한 번만 변환한다 (3,681정점, 2ms 남짓)
 export const PROVINCES = geo.features.map((f) => ({

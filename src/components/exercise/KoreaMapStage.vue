@@ -61,7 +61,14 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
         :transform="`translate(${a.x} ${a.y}) rotate(${a.bearing})`"
       >
         <path d="M0,-9 L0,7" :stroke="a.color" stroke-width="1.6" stroke-linecap="round" />
-        <path d="M-3.4,-4.4 L0,-9.4 L3.4,-4.4" :stroke="a.color" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+        <path
+          d="M-3.4,-4.4 L0,-9.4 L3.4,-4.4"
+          :stroke="a.color"
+          stroke-width="1.6"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </g>
     </svg>
 

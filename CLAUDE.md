@@ -78,6 +78,7 @@ VITE_PRIMEUI_LICENSE    PrimeVue Community License
 README에 "알고 있는 한계"로 명시해 둔 것들이 있습니다.
 
 - 홈 `convertTemp`와 상세 `displayTemp`의 화씨 변환 중복 (Composable이 해결책이나 범위 밖)
+- 지도 뷰가 홈의 시간여행 로직(`forecastMap`·`timeIndex`·`projectCity`)을 복사해 씀 (같은 이유)
 - 추가한 도시가 새로고침 시 소실 (localStorage 미연동)
 - Element Plus와 PrimeVue 공존으로 인한 번들 크기
 
@@ -99,7 +100,10 @@ src/
 │   ├── forecastStore.js             5일 예보
 │   ├── airStore.js                  대기질
 │   └── photoStore.js                Pexels 이미지
-├── utils/weatherTheme.js            그라디언트 / 검색어 / 기상코드 한글 매핑
+├── utils/
+│   ├── weatherTheme.js              그라디언트 / 검색어 / 기상코드 / 온도색 매핑
+│   ├── koreaMap.js                  시도 경계 투영·SVG path·육지 판정·마커 배치
+│   └── windField.js                 바람 벡터 분해·IDW·격자 캐시 (import 없는 순수 모듈)
 ├── views/
 │   ├── WeatherHomeView.vue          메인 (히어로 + 타일 그리드)
 │   ├── WeatherDetailView.vue        /weather/:cityId (좌우 2단, 사진 배경)
@@ -117,6 +121,7 @@ src/
 | 경로 | 화면 |
 |---|---|
 | `/` | 메인 대시보드 |
+| `/map` | 전국 지도 (기온 채색 + 바람) |
 | `/weather/:cityId` | 상세 |
 | `/favorites` | 즐겨찾기 |
 | `/practice` | 실습 모음 |
@@ -155,8 +160,13 @@ OS 다크 모드에 따라 색이 바뀌던 것을 고정한 상태입니다. **
 1. **한 번에 하나씩** 작업하고, 매번 확인을 받으세요
 2. 여러 파일을 동시에 고쳐야 하면 **먼저 계획을 설명**하고 승인을 받으세요
 3. 코드를 고친 뒤에는 **무엇을 왜 바꿨는지** 요약해 주세요
-4. `npm run format`은 Prettier가 세미콜론을 제거하므로,
-   템플릿 인라인 핸들러에 두 문장을 세미콜론으로 잇지 마세요 (과거에 화면이 깨진 적 있음)
+4. **`npm run format`을 저장소 전체에 돌리지 마세요.**
+   Prettier가 세미콜론을 제거하는데, `WeatherMockup.vue`의 템플릿 인라인 핸들러가
+   세미콜론으로 두 문장을 잇고 있어 **빌드가 깨집니다** (2026-08-22에 실제로 발생).
+   제출물(`practices/**`, 과제 3 컴포넌트, `WeatherMockup.vue`)도 통째로 재포맷되어
+   채점 대상 파일의 diff가 오염됩니다.
+   포맷이 필요하면 방금 작성한 파일만 지정해서 돌리세요.
+   새 코드를 쓸 때도 템플릿 인라인 핸들러에 두 문장을 세미콜론으로 잇지 마세요.
 5. 스타일 작업 시 **`<style scoped>`는 자식 컴포넌트 내부에 적용되지 않습니다.**
    자식 내부를 건드려야 하면 `:deep()`을 쓰거나 해당 컴포넌트 파일에서 수정하세요
 

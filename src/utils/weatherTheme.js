@@ -200,5 +200,4 @@ export const WIND_LEVELS = [
   { max: Infinity, label: '강함', color: 'rgba(255, 255, 255, 0.95)' },
 ]
 
-export const getWindColor = (speed) =>
-  WIND_LEVELS.find((l) => (speed ?? 0) < l.max).color
+export const getWindColor = (speed) => WIND_LEVELS.find((l) => (speed ?? 0) < l.max).color
