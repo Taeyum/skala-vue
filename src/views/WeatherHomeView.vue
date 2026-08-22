@@ -11,6 +11,7 @@ import WeatherHero from '@/components/exercise/WeatherHero.vue'
 import WeatherTile from '@/components/exercise/WeatherTile.vue'
 import CityAdder from '@/components/exercise/CityAdder.vue'
 import WeatherAnimation from '@/components/exercise/WeatherAnimation.vue'
+import CrossfadeBackground from '@/components/exercise/CrossfadeBackground.vue'
 import LifeBriefing from '@/components/exercise/LifeBriefing.vue'
 import TimeTravelBar from '@/components/exercise/TimeTravelBar.vue'
 
@@ -130,9 +131,7 @@ const selectedIsNight = computed(() =>
 )
 const tileIsNight = (city) => isNightAt(city?.sunrise, city?.sunset, targetMs.value)
 
-const backgroundStyle = computed(() => ({
-  background: getGradient(shownCity.value?.main, selectedIsNight.value),
-}))
+const backgroundGradient = computed(() => getGradient(shownCity.value?.main, selectedIsNight.value))
 
 const convertTemp = (celsius) => {
   if (celsius === null || celsius === undefined) return null
@@ -167,7 +166,8 @@ const handleRemove = (cityId) => {
 </script>
 
 <template>
-  <div class="dashboard" :style="backgroundStyle">
+  <div class="dashboard">
+    <CrossfadeBackground :background="backgroundGradient" />
     <WeatherAnimation :main="shownCity?.main" :night="selectedIsNight" />
     <!-- ① 히어로 -->
     <WeatherHero
@@ -248,10 +248,11 @@ const handleRemove = (cityId) => {
 <style scoped>
 .dashboard {
   position: relative;
+  /* 배경 레이어(z-index: -1)가 이 카드 뒤로 빠지지 않게 스태킹 컨텍스트를 고정 */
+  isolation: isolate;
   padding: var(--sp-6);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-md);
-  transition: background 0.8s ease;
 }
 
 /* ── 툴바 ── */

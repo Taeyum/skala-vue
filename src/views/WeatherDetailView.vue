@@ -12,6 +12,7 @@ import { useAirStore } from '@/stores/airStore.js'
 import ForecastChart from '@/components/exercise/ForecastChart.vue'
 import LifeBriefing from '@/components/exercise/LifeBriefing.vue'
 import RollingNumber from '@/components/exercise/RollingNumber.vue'
+import CrossfadeBackground from '@/components/exercise/CrossfadeBackground.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -146,10 +147,8 @@ watch(
   { immediate: true },
 )
 
-// 배경 스타일
-const heroStyle = computed(() =>
-  photo.value ? { backgroundImage: `url(${photo.value.url})` } : {},
-)
+// 배경 — 사진이 오기 전에는 CSS 기본 그라디언트가 노출된다
+const heroBg = computed(() => (photo.value ? `url(${photo.value.url})` : ''))
 
 // 새로고침으로 상세 페이지에 직접 진입한 경우 데이터가 없으므로 조회
 onMounted(() => {
@@ -162,7 +161,8 @@ onMounted(() => {
 <template>
   <div class="detail-layout">
     <!-- ── 좌측: 히어로 영역 ── -->
-    <section class="hero" :style="heroStyle">
+    <section class="hero">
+      <CrossfadeBackground :background="heroBg" />
       <!-- 배경 영상: 이미지 위에 깔리고 재생 준비되면 페이드인 -->
       <video
         v-for="layer in videoLayers"
@@ -330,10 +330,9 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   padding: var(--sp-6);
+  /* 사진 레이어(z-index: -1)가 뒤로 빠지지 않게 스태킹 컨텍스트를 고정 */
+  isolation: isolate;
   background: linear-gradient(160deg, #4a5568, #2d3748);
-  background-size: cover;
-  background-position: center;
-  transition: background-image 0.5s ease;
   color: #fff;
 }
 
@@ -344,7 +343,7 @@ onMounted(() => {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transition: opacity var(--dur-4) var(--ease-in-out);
   pointer-events: none;
 }
 
