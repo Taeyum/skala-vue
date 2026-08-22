@@ -9,6 +9,8 @@ const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
 const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct'
 
 // 조회 대상 도시 (한글명 ↔ API 조회용 영문명 매핑)
+// 17개 시도에 하나씩. 도(道)는 도청 소재지를 기본으로 하되,
+// 강릉(기존 id 유지)·목포(무안보다 마커가 덜 겹침)는 예외로 두었다
 const CITY_PRESET = [
   { id: 'city_01', name: '서울', query: 'Seoul' },
   { id: 'city_02', name: '수원', query: 'Suwon' },
@@ -16,7 +18,23 @@ const CITY_PRESET = [
   { id: 'city_04', name: '강릉', query: 'Gangneung' },
   { id: 'city_05', name: '대전', query: 'Daejeon' },
   { id: 'city_06', name: '제주', query: 'Jeju' },
+  { id: 'city_07', name: '인천', query: 'Incheon' },
+  { id: 'city_08', name: '대구', query: 'Daegu' },
+  { id: 'city_09', name: '광주', query: 'Gwangju' },
+  { id: 'city_10', name: '울산', query: 'Ulsan' },
+  { id: 'city_11', name: '세종', query: 'Sejong' },
+  { id: 'city_12', name: '청주', query: 'Cheongju' },
+  { id: 'city_13', name: '홍성', query: 'Hongseong' },
+  { id: 'city_14', name: '전주', query: 'Jeonju' },
+  { id: 'city_15', name: '목포', query: 'Mokpo' },
+  { id: 'city_16', name: '안동', query: 'Andong' },
+  { id: 'city_17', name: '창원', query: 'Changwon' },
 ]
+
+// 프리셋 도시는 삭제할 수 없다. id 문자열로 판별하면 city_10 이후가 새는 문제가 있어 목록으로 둔다
+const PRESET_IDS = new Set(CITY_PRESET.map((c) => c.id))
+
+export const PRESET_COUNT = CITY_PRESET.length
 
 export const useWeatherStore = defineStore('weather', () => {
   // ── state ──
@@ -59,6 +77,8 @@ export const useWeatherStore = defineStore('weather', () => {
         main: data.weather[0].main,
         humidity: data.main.humidity,
         windSpeed: data.wind.speed,
+        // 바람이 불어오는 방향(도, 진북 기준 시계방향) — 지도 바람 레이어에서 쓴다
+        windDeg: data.wind.deg ?? null,
         clouds: data.clouds.all,
         lat: data.coord.lat,
         lon: data.coord.lon,
@@ -82,6 +102,7 @@ export const useWeatherStore = defineStore('weather', () => {
         main: null,
         humidity: null,
         windSpeed: null,
+        windDeg: null,
         clouds: null,
         lat: null,
         lon: null,
@@ -97,7 +118,7 @@ export const useWeatherStore = defineStore('weather', () => {
     isLoading.value = true
     errorMessage.value = ''
     try {
-      // 순차 await이면 6배 느리므로 Promise.all로 동시에 요청
+      // 순차 await이면 도시 수만큼 느려지므로 Promise.all로 동시에 요청
       weatherList.value = await Promise.all(CITY_PRESET.map(fetchOne))
     } catch (error) {
       console.error('[weatherStore] 전체 조회 실패:', error)
@@ -149,6 +170,8 @@ export const useWeatherStore = defineStore('weather', () => {
     weatherList.value = weatherList.value.filter((c) => c.id !== cityId)
   }
 
+  const isPreset = (cityId) => PRESET_IDS.has(cityId)
+
   return {
     weatherList,
     isLoading,
@@ -159,5 +182,6 @@ export const useWeatherStore = defineStore('weather', () => {
     findById,
     addCity,
     removeCity,
+    isPreset,
   }
 })

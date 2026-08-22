@@ -3,7 +3,7 @@ import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '@/stores/configStore.js'
 import { useFavoriteStore } from '@/stores/favoriteStore.js'
-import { useWeatherStore } from '@/stores/weatherStore.js'
+import { useWeatherStore, PRESET_COUNT } from '@/stores/weatherStore.js'
 import { useForecastStore } from '@/stores/forecastStore.js'
 import { getGradient } from '@/utils/weatherTheme.js'
 import { formatLocalTime, formatStamp, isNightAt, describeSlot } from '@/utils/localTime.js'
@@ -107,6 +107,7 @@ const projectCity = (city) => {
     main: slot.main,
     humidity: slot.humidity,
     windSpeed: slot.windSpeed,
+    windDeg: slot.windDeg ?? city.windDeg,
     clouds: slot.clouds ?? city.clouds,
   }
 }
@@ -221,7 +222,7 @@ const handleRemove = (cityId) => {
 
     <!-- ③ 상태 표시 — 로딩 중에는 실물 크기의 스켈레톤으로 자리를 잡아 둔다 -->
     <div v-if="weatherStore.isLoading" class="tile-grid">
-      <div v-for="n in 6" :key="n" class="skel skel-tile"></div>
+      <div v-for="n in PRESET_COUNT" :key="n" class="skel skel-tile"></div>
     </div>
     <p v-else-if="weatherStore.errorMessage" class="state-msg error">
       {{ weatherStore.errorMessage }}
@@ -238,7 +239,7 @@ const handleRemove = (cityId) => {
         :is-selected="selectedId === item.id"
         :is-favorite="favoriteStore.isFavorite(item.id)"
         :night="tileIsNight(item)"
-        :can-remove="!item.id.startsWith('city_0')"
+        :can-remove="!weatherStore.isPreset(item.id)"
         @select="handleSelect"
         @detail="handleDetail"
         @toggle-favorite="favoriteStore.toggleFavorite"

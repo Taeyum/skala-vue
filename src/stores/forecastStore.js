@@ -28,6 +28,8 @@ export const useForecastStore = defineStore('forecast', () => {
         clouds: item.clouds?.all ?? null,
         humidity: item.main.humidity,
         windSpeed: item.wind.speed,
+        // 지도 바람 레이어가 시간여행을 따라가려면 예보 슬롯에도 풍향이 있어야 한다
+        windDeg: item.wind.deg ?? null,
         pop: Math.round(item.pop * 100),
         icon: item.weather[0].icon,
         main: item.weather[0].main,
