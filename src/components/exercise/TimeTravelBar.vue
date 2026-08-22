@@ -47,7 +47,8 @@ watch(
   async (v) => {
     await nextTick()
     const el = strip.value?.querySelector(`[data-index="${v}"]`)
-    el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    el?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', inline: 'center', block: 'nearest' })
   },
 )
 </script>

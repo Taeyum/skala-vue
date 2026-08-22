@@ -293,4 +293,21 @@ const type = computed(() => {
     transform: translateX(calc(100vw + 400px));
   }
 }
+
+/* 무한 루프 애니메이션은 duration 토큰과 무관하므로 여기서 직접 끈다.
+   0.01s로 줄이면 스트로브가 되기 때문에 animation: none이어야 한다 */
+@media (prefers-reduced-motion: reduce) {
+  .drop,
+  .flake {
+    display: none;
+  }
+
+  .sun-core,
+  .sun-ray,
+  .star,
+  .moon-glow,
+  .cloud {
+    animation: none;
+  }
+}
 </style>

@@ -98,6 +98,25 @@
   --fs-body: 14px;
   --fs-sm: 13px;
   --fs-xs: 12px;
+
+  /* 모션 — 전 화면에서 이 토큰만 사용한다 */
+  --dur-1: 0.15s; /* 즉각 피드백: 눌림 */
+  --dur-2: 0.25s; /* 표준 UI: hover, 색, 페이드 */
+  --dur-3: 0.45s; /* 이동·등장: 타일 재배치, 라우트, 히어로 */
+  --dur-4: 0.8s; /* 앰비언트: 배경·영상 크로스페이드 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* 기본 — 빠른 출발, 긴 안착 */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* 위치 이동, 크로스페이드 */
+  --ease-emphasized: cubic-bezier(0.32, 0.72, 0, 1); /* 큰 요소 등장 */
+}
+
+/* 0이 아닌 0.01s — transitionend에 의존하는 레이어 정리 로직이 깨지지 않아야 한다 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0.01s;
+    --dur-2: 0.01s;
+    --dur-3: 0.01s;
+    --dur-4: 0.01s;
+  }
 }
 
 *,
