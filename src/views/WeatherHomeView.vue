@@ -171,7 +171,9 @@ const handleRemove = (cityId) => {
     <WeatherAnimation :main="shownCity?.main" :night="selectedIsNight" />
     <!-- ① 히어로 — 도시가 바뀔 때만 스왑, 시간여행은 key가 같아 숫자만 흐른다 -->
     <Transition name="hero-swap" mode="out-in">
+      <div v-if="weatherStore.isLoading" class="skel skel-hero"></div>
       <WeatherHero
+        v-else
         :key="selectedId"
         :city="shownCity"
         :display-temp="convertTemp(shownCity?.temp)"
@@ -217,14 +219,16 @@ const handleRemove = (cityId) => {
       </button>
     </div>
 
-    <!-- ③ 상태 표시 -->
-    <p v-if="weatherStore.isLoading" class="state-msg">날씨 정보를 불러오는 중입니다...</p>
+    <!-- ③ 상태 표시 — 로딩 중에는 실물 크기의 스켈레톤으로 자리를 잡아 둔다 -->
+    <div v-if="weatherStore.isLoading" class="tile-grid">
+      <div v-for="n in 6" :key="n" class="skel skel-tile"></div>
+    </div>
     <p v-else-if="weatherStore.errorMessage" class="state-msg error">
       {{ weatherStore.errorMessage }}
     </p>
 
     <!-- ④ 타일 그리드 -->
-    <TransitionGroup v-else name="tile" tag="div" class="tile-grid">
+    <TransitionGroup v-else name="tile" tag="div" class="tile-grid" appear>
       <WeatherTile
         v-for="item in shownList"
         :key="item.id"
@@ -343,6 +347,45 @@ const handleRemove = (cityId) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--sp-4);
+}
+
+/* ── 로딩 스켈레톤 ── */
+.skel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* 반짝임은 transform만 사용 — layout 비용 없음 */
+.skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel::after {
+    animation: none;
+  }
+}
+
+/* 실물 높이와 맞춰 데이터 도착 시 레이아웃 점프를 막는다 */
+.skel-hero {
+  min-height: 515px;
+}
+
+.skel-tile {
+  height: 281px;
 }
 
 /* ── 히어로 스왑: 이전 도시는 위로 짧게 물러나고, 새 도시는 아래에서 길게 안착 ── */

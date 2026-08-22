@@ -208,6 +208,11 @@ onMounted(() => {
         </div>
       </div>
 
+      <!-- 직접 URL 진입 시 조회가 끝나기 전에 "찾을 수 없음"이 번쩍이지 않도록 로딩을 구분 -->
+      <div v-else-if="weatherStore.isLoading" class="hero-bottom">
+        <div class="skel skel-temp"></div>
+      </div>
+
       <div v-else class="hero-bottom">
         <p class="not-found">해당 지역의 관측 정보를 찾을 수 없습니다.</p>
       </div>
@@ -334,6 +339,39 @@ onMounted(() => {
   isolation: isolate;
   background: linear-gradient(160deg, #4a5568, #2d3748);
   color: #fff;
+}
+
+/* ── 로딩 스켈레톤 ── */
+.skel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  animation: shimmer 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel::after {
+    animation: none;
+  }
+}
+
+.skel-temp {
+  height: 118px;
 }
 
 .hero-video {
