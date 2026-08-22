@@ -30,6 +30,7 @@ watch(
 
         <nav class="nav">
           <RouterLink to="/" class="nav-item">대시보드</RouterLink>
+          <RouterLink to="/map" class="nav-item">지도</RouterLink>
           <RouterLink to="/favorites" class="nav-item">
             즐겨찾기
             <span v-if="favoriteStore.hasFavorite" class="badge-count">
