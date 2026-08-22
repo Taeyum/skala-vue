@@ -243,7 +243,7 @@ const selectChapter = (key) => {
   box-shadow: var(--shadow-sm);
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color var(--dur-2) var(--ease-out);
 }
 
 .side-item:hover {
@@ -372,7 +372,7 @@ const selectChapter = (key) => {
   font-size: 16px;
   font-weight: 700;
   color: var(--c-primary);
-  transition: transform 0.25s;
+  transition: transform var(--dur-2) var(--ease-out);
 }
 
 .accordion.open .acc-arrow {
@@ -406,7 +406,9 @@ const selectChapter = (key) => {
 /* 아코디언 펼침 애니메이션 */
 .acc-enter-active,
 .acc-leave-active {
-  transition: all 0.3s ease;
+  transition:
+    opacity var(--dur-2) var(--ease-out),
+    max-height var(--dur-2) var(--ease-out);
   overflow: hidden;
 }
 

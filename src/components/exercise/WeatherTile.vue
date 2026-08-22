@@ -67,9 +67,9 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease;
+    transform var(--dur-2) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out),
+    border-color var(--dur-2) var(--ease-out);
 }
 
 .tile:hover {
@@ -77,9 +77,21 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
   box-shadow: var(--shadow-lg);
 }
 
+/* 누르는 순간은 즉각(--dur-1) 가라앉고, 떼면 기본 속도로 느긋하게 복귀 */
+.tile:active {
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: var(--shadow-sm);
+  transition-duration: var(--dur-1);
+}
+
 .tile.selected {
   border-color: var(--c-primary);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  transform: translateY(-2px);
+}
+
+.tile.selected:hover {
+  transform: translateY(-6px);
 }
 
 .tile-top {
@@ -114,11 +126,18 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
   color: var(--c-text-muted);
   font-size: var(--fs-body);
   cursor: pointer;
-  transition: color 0.2s;
+  transition:
+    color var(--dur-2) var(--ease-out),
+    transform var(--dur-2) var(--ease-out);
 }
 
 .icon-btn:hover {
   color: var(--c-text-sub);
+}
+
+.icon-btn:active {
+  transform: scale(0.85);
+  transition-duration: var(--dur-1);
 }
 
 .icon-btn.active {
@@ -168,10 +187,17 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
   font-size: var(--fs-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition:
+    background var(--dur-2) var(--ease-out),
+    transform var(--dur-2) var(--ease-out);
 }
 
 .btn-detail:hover {
   background: rgba(52, 152, 219, 0.2);
+}
+
+.btn-detail:active {
+  transform: scale(0.96);
+  transition-duration: var(--dur-1);
 }
 </style>

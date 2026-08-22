@@ -346,7 +346,9 @@ const handleRemove = (cityId) => {
 .tile-move,
 .tile-enter-active,
 .tile-leave-active {
-  transition: all 0.45s cubic-bezier(0.55, 0, 0.1, 1);
+  transition:
+    transform var(--dur-3) var(--ease-in-out),
+    opacity var(--dur-3) var(--ease-in-out);
 }
 
 .tile-enter-from,

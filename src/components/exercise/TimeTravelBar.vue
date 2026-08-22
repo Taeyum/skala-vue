@@ -143,8 +143,8 @@ watch(
   font-weight: 700;
   cursor: pointer;
   transition:
-    background 0.2s,
-    color 0.2s;
+    background var(--dur-2) var(--ease-out),
+    color var(--dur-2) var(--ease-out);
 }
 
 .reset:hover {
@@ -154,7 +154,7 @@ watch(
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s;
+  transition: opacity var(--dur-2) var(--ease-out);
 }
 
 .fade-enter-from,
@@ -201,13 +201,18 @@ watch(
   color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
   transition:
-    background 0.2s,
-    border-color 0.2s,
-    transform 0.2s;
+    background var(--dur-2) var(--ease-out),
+    border-color var(--dur-2) var(--ease-out),
+    transform var(--dur-2) var(--ease-out);
 }
 
 .slot:hover {
   background: rgba(255, 255, 255, 0.12);
+}
+
+.slot:active {
+  transform: scale(0.94);
+  transition-duration: var(--dur-1);
 }
 
 .slot.active {

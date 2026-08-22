@@ -176,7 +176,10 @@ const STACK = [
   text-decoration: none;
   font-size: var(--fs-body);
   font-weight: 600;
-  transition: all 0.2s;
+  transition:
+    border-color var(--dur-2) var(--ease-out),
+    color var(--dur-2) var(--ease-out),
+    transform var(--dur-2) var(--ease-out);
 }
 
 .link-btn:hover {

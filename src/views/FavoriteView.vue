@@ -120,8 +120,8 @@ const handleDetail = (city) => router.push(`/weather/${city.id}`)
   font-size: var(--fs-body);
   font-weight: 600;
   transition:
-    background 0.2s,
-    transform 0.2s;
+    background var(--dur-2) var(--ease-out),
+    transform var(--dur-2) var(--ease-out);
 }
 
 .link-btn:hover {
@@ -132,13 +132,15 @@ const handleDetail = (city) => router.push(`/weather/${city.id}`)
 .tile-move,
 .tile-enter-active,
 .tile-leave-active {
-  transition: all 0.45s cubic-bezier(0.55, 0, 0.1, 1);
+  transition:
+    transform var(--dur-3) var(--ease-in-out),
+    opacity var(--dur-3) var(--ease-in-out);
 }
 
 .tile-enter-from,
 .tile-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.9) translateY(20px);
 }
 
 .tile-leave-active {
