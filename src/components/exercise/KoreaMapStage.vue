@@ -8,6 +8,8 @@ defineProps({
   // 부모가 좌표·온도까지 계산해 넘긴다. 이 컴포넌트는 그리기만 한다
   // { id, name, x, y, dx, dy, temp, icon, selected, night }
   markers: { type: Array, default: () => [] },
+  // { x, y, bearing, color } — 방향 계산은 부모(windField)가 끝내서 넘긴다
+  arrows: { type: Array, default: () => [] },
   unit: { type: String, default: '℃' },
   activeCode: { type: String, default: '' },
 })
@@ -39,6 +41,26 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
 
     <!-- 지도 위 오버레이 (바람 화살표 등) -->
     <slot name="overlay"></slot>
+
+    <!-- 바람 화살표. 글리프를 북쪽으로 그려 두고 rotate만 걸면
+         SVG 회전(시계방향)과 나침반 방위각이 같은 규칙이라 방향이 맞는다 -->
+    <svg
+      v-if="arrows.length"
+      class="layer"
+      :viewBox="`0 0 ${VIEW_W} ${VIEW_H}`"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+    >
+      <g
+        v-for="(a, i) in arrows"
+        :key="i"
+        class="arrow"
+        :transform="`translate(${a.x} ${a.y}) rotate(${a.bearing})`"
+      >
+        <path d="M0,-9 L0,7" :stroke="a.color" stroke-width="1.6" stroke-linecap="round" />
+        <path d="M-3.4,-4.4 L0,-9.4 L3.4,-4.4" :stroke="a.color" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+      </g>
+    </svg>
 
     <!-- 지시선과 관측 지점. 칩은 비켜 놓지만 점은 실제 좌표에 남는다 -->
     <svg
@@ -115,6 +137,10 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}.png`
 .province.active {
   stroke: rgba(255, 255, 255, 0.95);
   stroke-width: 2.4;
+}
+
+.arrow {
+  transition: transform var(--dur-3) var(--ease-in-out);
 }
 
 .leader {

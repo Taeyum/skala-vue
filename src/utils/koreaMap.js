@@ -62,6 +62,60 @@ export const PROVINCES = geo.features.map((f) => ({
   d: featureToPath(f),
 }))
 
+// ── 육지 판정 ──
+// 링을 화면 좌표로 미리 바꿔 두고 bbox도 함께 들고 있는다.
+// bbox로 먼저 거르면 섬이 많은 전남(61개 폴리곤)에서 대부분의 링을 건너뛴다
+const LAND_RINGS = geo.features.flatMap((f) =>
+  toPolygons(f.geometry)
+    .flat()
+    .map((ring) => {
+      const pts = ring.map(([lon, lat]) => [projectX(lon), projectY(lat)])
+      let minX = Infinity
+      let maxX = -Infinity
+      let minY = Infinity
+      let maxY = -Infinity
+      for (const [x, y] of pts) {
+        if (x < minX) minX = x
+        if (x > maxX) maxX = x
+        if (y < minY) minY = y
+        if (y > maxY) maxY = y
+      }
+      return { pts, minX, maxX, minY, maxY }
+    }),
+)
+
+// 광선투사. 모든 링을 짝·홀로 토글하므로 구멍이 저절로 맞는다 —
+// 광주 안의 점은 전남 바깥고리 + 전남 구멍 + 광주 바깥고리 = 3회(홀수) = 육지
+export const pointInLand = (x, y) => {
+  let inside = false
+  for (const ring of LAND_RINGS) {
+    if (y < ring.minY || y > ring.maxY || x < ring.minX || x > ring.maxX) continue
+    const pts = ring.pts
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      const [xi, yi] = pts[i]
+      const [xj, yj] = pts[j]
+      if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+        inside = !inside
+      }
+    }
+  }
+  return inside
+}
+
+// ── 바람 화살표를 놓을 자리 ──
+// 위치는 시간이 지나도 변하지 않고 방향만 바뀌므로 모듈 로드 때 한 번만 골라 둔다
+export const ARROW_STEP = 48
+
+export const ARROW_CELLS = (() => {
+  const cells = []
+  for (let y = ARROW_STEP / 2; y < VIEW_H; y += ARROW_STEP) {
+    for (let x = ARROW_STEP / 2; x < VIEW_W; x += ARROW_STEP) {
+      if (pointInLand(x, y)) cells.push({ x, y })
+    }
+  }
+  return cells
+})()
+
 // ── 도시 ↔ 시도 매핑과 마커 배치 ──
 // offset: 마커 칩을 점에서 얼마나 비켜 놓을지 (viewBox 단위).
 // 세종·대전이 27.7단위(화면 18px)까지 붙어 있어 칩을 그대로 두면 서로 덮는다.

@@ -195,9 +195,9 @@ export const getTempColor = (celsius, isNight = false) => {
 
 // 바람 세기 → 색 (화살표·범례용). 3단계로 끊어 캔버스 드로우 콜도 이 기준으로 묶는다
 export const WIND_LEVELS = [
-  { max: 4, label: '약함', color: 'rgba(180, 214, 255, 0.45)' },
-  { max: 9, label: '보통', color: 'rgba(214, 234, 255, 0.7)' },
-  { max: Infinity, label: '강함', color: 'rgba(255, 255, 255, 0.92)' },
+  { max: 4, label: '약함', color: 'rgba(168, 206, 255, 0.62)' },
+  { max: 9, label: '보통', color: 'rgba(214, 234, 255, 0.82)' },
+  { max: Infinity, label: '강함', color: 'rgba(255, 255, 255, 0.95)' },
 ]
 
 export const getWindColor = (speed) =>

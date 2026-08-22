@@ -4,9 +4,18 @@ import { useRouter } from 'vue-router'
 import { useWeatherStore } from '@/stores/weatherStore.js'
 import { useConfigStore } from '@/stores/configStore.js'
 import { useForecastStore } from '@/stores/forecastStore.js'
-import { getTempColor } from '@/utils/weatherTheme.js'
+import { getTempColor, getWindColor } from '@/utils/weatherTheme.js'
 import { isNightAt, formatLocalTime, describeSlot } from '@/utils/localTime.js'
-import { projectX, projectY, getMapPoint, PROVINCE_BY_CITY } from '@/utils/koreaMap.js'
+import {
+  projectX,
+  projectY,
+  getMapPoint,
+  PROVINCE_BY_CITY,
+  ARROW_CELLS,
+  VIEW_W,
+  VIEW_H,
+} from '@/utils/koreaMap.js'
+import { toScreenVector, toBearing, speedOf, sampleWind } from '@/utils/windField.js'
 import KoreaMapStage from '@/components/exercise/KoreaMapStage.vue'
 import MapLegend from '@/components/exercise/MapLegend.vue'
 import TimeTravelBar from '@/components/exercise/TimeTravelBar.vue'
@@ -134,6 +143,42 @@ const ranking = computed(() =>
   mapCities.value.toSorted((a, b) => (b.temp ?? -99) - (a.temp ?? -99)),
 )
 
+// ── 바람 ──
+const showWind = ref(true)
+
+// 관측 지점을 화면 벡터로 미리 바꿔 둔다.
+// 이후 계산에서는 삼각함수를 다시 쓰지 않는다
+const stations = computed(() =>
+  mapCities.value
+    .filter((c) => c.windSpeed !== null && c.windDeg !== null)
+    .map((c) => ({
+      x: projectX(c.lon),
+      y: projectY(c.lat),
+      ...toScreenVector(c.windSpeed, c.windDeg),
+    })),
+)
+
+const arrows = computed(() => {
+  if (!showWind.value || stations.value.length === 0) return []
+  return ARROW_CELLS.map((cell) => {
+    const { sx, sy } = sampleWind(stations.value, cell.x, cell.y)
+    return {
+      x: cell.x,
+      y: cell.y,
+      bearing: toBearing(sx, sy),
+      color: getWindColor(speedOf(sx, sy)),
+    }
+  })
+})
+
+// 선택 도시의 풍향 — 화살표와 같은 규칙으로 돌려야 둘이 어긋나지 않는다
+const selectedWind = computed(() => {
+  const c = shownCity.value
+  if (!c || c.windSpeed === null || c.windDeg === null) return null
+  const v = toScreenVector(c.windSpeed, c.windDeg)
+  return { bearing: toBearing(v.sx, v.sy), speed: c.windSpeed }
+})
+
 const select = (cityId) => (selectedId.value = cityId)
 const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.value}`)
 </script>
@@ -144,6 +189,9 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
       <h1 class="title">전국 날씨 지도</h1>
       <p class="caption">시도별 대표 1지점 기준</p>
       <span class="stamp">기준 {{ timeLabel }}</span>
+      <button class="toggle" :class="{ on: showWind }" :aria-pressed="showWind" @click="showWind = !showWind">
+        바람
+      </button>
     </header>
 
     <div class="body">
@@ -152,11 +200,17 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
           :fills="fills"
           :markers="markers"
           :unit="configStore.unitSymbol"
+          :arrows="arrows"
           :active-code="activeCode"
           @select="select"
         />
 
-        <MapLegend :unit="configStore.unitSymbol" :convert-temp="convertTemp" class="legend-row" />
+        <MapLegend
+          :unit="configStore.unitSymbol"
+          :convert-temp="convertTemp"
+          :show-wind="showWind"
+          class="legend-row"
+        />
       </div>
 
       <aside class="panel">
@@ -181,6 +235,18 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
             <div><dt>습도</dt><dd><RollingNumber :value="shownCity.humidity" />%</dd></div>
             <div><dt>풍속</dt><dd><RollingNumber :value="shownCity.windSpeed" />m/s</dd></div>
           </dl>
+
+          <!-- 지도 화살표와 같은 각도를 쓰므로 둘이 늘 같은 방향을 가리킨다 -->
+          <div v-if="selectedWind" class="wind-row">
+            <svg class="compass" viewBox="-14 -14 28 28" aria-hidden="true">
+              <circle r="12" fill="none" stroke="rgba(255,255,255,0.25)" />
+              <g :style="{ transform: `rotate(${selectedWind.bearing}deg)` }" class="needle">
+                <path d="M0,-8 L0,7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M-3,-4 L0,-9 L3,-4" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+              </g>
+            </svg>
+            <span class="wind-text">바람이 가는 방향 · {{ Math.round(selectedWind.speed) }}m/s</span>
+          </div>
 
           <button class="btn-detail" @click="goDetail">상세보기 →</button>
         </section>
@@ -276,6 +342,52 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
 
 .legend-row {
   margin-top: var(--sp-3);
+}
+
+.toggle {
+  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-2) var(--ease-out),
+    color var(--dur-2) var(--ease-out),
+    border-color var(--dur-2) var(--ease-out);
+}
+
+.toggle.on {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.toggle:active {
+  transform: scale(0.96);
+  transition-duration: var(--dur-1);
+}
+
+.wind-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-xs);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.compass {
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+
+.needle {
+  transform-origin: center;
+  transition: transform var(--dur-3) var(--ease-in-out);
 }
 
 .travel {
