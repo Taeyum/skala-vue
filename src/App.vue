@@ -1,10 +1,25 @@
 <script setup>
 import './assets/exercise.css'
-import { RouterLink, RouterView } from 'vue-router'
+import { ref, watch } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useFavoriteStore } from '@/stores/favoriteStore.js'
 import UnitToggler from '@/components/exercise/UnitToggler.vue'
 
 const favoriteStore = useFavoriteStore()
+
+// 라우트 depth를 비교해 전환 방향을 정한다 — 깊어지면 오른쪽에서, 얕아지면 왼쪽에서
+const route = useRoute()
+const transitionName = ref('route-fade')
+let prevDepth = route.meta.depth ?? 0
+watch(
+  () => route.meta.depth,
+  (d) => {
+    const nextDepth = d ?? 0
+    transitionName.value =
+      nextDepth > prevDepth ? 'route-fwd' : nextDepth < prevDepth ? 'route-back' : 'route-fade'
+    prevDepth = nextDepth
+  },
+)
 </script>
 
 <template>
@@ -30,7 +45,11 @@ const favoriteStore = useFavoriteStore()
     </header>
 
     <main class="app-main">
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <Transition :name="transitionName" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </RouterView>
     </main>
   </div>
 </template>
@@ -132,5 +151,52 @@ const favoriteStore = useFavoriteStore()
   max-width: 1400px;
   margin: 0 auto;
   padding: var(--sp-4) var(--sp-8) var(--sp-8);
+}
+</style>
+
+<!-- 라우트 전환 클래스는 각 뷰의 루트 요소에 붙으므로 scoped로는 닿지 않는다 -->
+<style>
+.route-fwd-enter-active,
+.route-back-enter-active {
+  transition:
+    opacity var(--dur-3) var(--ease-emphasized),
+    transform var(--dur-3) var(--ease-emphasized);
+}
+
+.route-fwd-leave-active,
+.route-back-leave-active,
+.route-fade-leave-active {
+  transition:
+    opacity var(--dur-2) var(--ease-in-out),
+    transform var(--dur-2) var(--ease-in-out);
+}
+
+.route-fade-enter-active {
+  transition: opacity var(--dur-3) var(--ease-out);
+}
+
+.route-fwd-enter-from {
+  opacity: 0;
+  transform: translateX(28px);
+}
+
+.route-fwd-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.route-back-enter-from {
+  opacity: 0;
+  transform: translateX(-28px);
+}
+
+.route-back-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.route-fade-enter-from,
+.route-fade-leave-to {
+  opacity: 0;
 }
 </style>
