@@ -1,23 +1,39 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWeatherStore } from '@/stores/weatherStore.js'
 import { useConfigStore } from '@/stores/configStore.js'
+import { useForecastStore } from '@/stores/forecastStore.js'
 import { getTempColor } from '@/utils/weatherTheme.js'
-import { isNightAt, formatLocalTime } from '@/utils/localTime.js'
+import { isNightAt, formatLocalTime, describeSlot } from '@/utils/localTime.js'
 import { projectX, projectY, getMapPoint, PROVINCE_BY_CITY } from '@/utils/koreaMap.js'
 import KoreaMapStage from '@/components/exercise/KoreaMapStage.vue'
+import MapLegend from '@/components/exercise/MapLegend.vue'
+import TimeTravelBar from '@/components/exercise/TimeTravelBar.vue'
 import RollingNumber from '@/components/exercise/RollingNumber.vue'
 
 const router = useRouter()
 const weatherStore = useWeatherStore()
 const configStore = useConfigStore()
+const forecastStore = useForecastStore()
 
 const selectedId = ref('')
 
 // 낮·밤 판정 기준이 되는 "지금". 1분마다 갱신해 일몰을 지나면 지도가 따라 어두워진다
 const now = ref(Date.now())
 let clock = null
+
+// 도시별 예보. 시간여행이 지도 전체를 바꿔야 하므로 전 도시를 미리 받아 둔다
+// (forecastStore가 도시별로 캐싱하므로 홈을 거쳐 왔다면 추가 호출이 없다)
+const forecastMap = ref({})
+const loadForecasts = async () => {
+  const missing = weatherStore.weatherList.filter((c) => !forecastMap.value[c.id])
+  const results = await Promise.all(missing.map((c) => forecastStore.fetchForecast(c.id, c.query)))
+  missing.forEach((c, i) => (forecastMap.value[c.id] = results[i]))
+}
+
+// -1 = 지금(현재 날씨), 0~39 = 선택 도시 예보의 n번째 3시간 구간
+const timeIndex = ref(-1)
 
 onMounted(async () => {
   if (!weatherStore.hasData) {
@@ -27,22 +43,63 @@ onMounted(async () => {
     selectedId.value = weatherStore.weatherList[0].id
   }
   clock = setInterval(() => (now.value = Date.now()), 60 * 1000)
+  loadForecasts()
 })
 onUnmounted(() => clearInterval(clock))
+
+watch(
+  () => weatherStore.weatherList.length,
+  () => loadForecasts(),
+)
 
 const convertTemp = (celsius) => {
   if (celsius === null || celsius === undefined) return null
   return configStore.unit === 'fahrenheit' ? Math.round((celsius * 9) / 5 + 32) : celsius
 }
 
-const cityIsNight = (city) => isNightAt(city?.sunrise, city?.sunset, now.value)
+const selectedCity = computed(() => weatherStore.weatherList.find((c) => c.id === selectedId.value))
+const selectedForecast = computed(() => forecastMap.value[selectedId.value] ?? [])
+
+// 선택한 구간 (없으면 "지금")
+const targetSlot = computed(() =>
+  timeIndex.value >= 0 ? (selectedForecast.value[timeIndex.value] ?? null) : null,
+)
+const targetMs = computed(() => (targetSlot.value ? targetSlot.value.dt * 1000 : now.value))
+
+// 도시 객체에 선택 구간의 예보를 덮어씌운 "그 시각의 도시".
+// lat·lon·timezone은 그대로 남으므로 마커 위치가 흔들리지 않는다
+const projectCity = (city) => {
+  if (!city || !targetSlot.value) return city
+  const slot = (forecastMap.value[city.id] ?? []).find((f) => f.dt === targetSlot.value.dt)
+  if (!slot) return city
+  return {
+    ...city,
+    temp: slot.temp,
+    feelsLike: slot.feelsLike,
+    status: slot.status,
+    icon: slot.icon,
+    main: slot.main,
+    humidity: slot.humidity,
+    windSpeed: slot.windSpeed,
+    windDeg: slot.windDeg ?? city.windDeg,
+    clouds: slot.clouds ?? city.clouds,
+  }
+}
+
+const cityIsNight = (city) => isNightAt(city?.sunrise, city?.sunset, targetMs.value)
 
 // 지도에 올릴 도시 — MAP_POINTS에 없는 도시(사용자가 검색으로 추가한 곳)는 제외한다
 const mapCities = computed(() =>
-  weatherStore.weatherList.filter((c) => getMapPoint(c.id) && c.lat !== null),
+  weatherStore.weatherList.filter((c) => getMapPoint(c.id) && c.lat !== null).map(projectCity),
 )
 
-const selectedCity = computed(() => weatherStore.weatherList.find((c) => c.id === selectedId.value))
+const shownCity = computed(() => projectCity(selectedCity.value))
+
+const timeLabel = computed(() => {
+  if (!targetSlot.value) return '지금'
+  const d = describeSlot(targetSlot.value.dt, selectedCity.value?.timezone ?? 0, now.value)
+  return `${d.day} ${d.time}`
+})
 
 const activeCode = computed(() => PROVINCE_BY_CITY[selectedId.value] ?? '')
 
@@ -86,6 +143,7 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
     <header class="head">
       <h1 class="title">전국 날씨 지도</h1>
       <p class="caption">시도별 대표 1지점 기준</p>
+      <span class="stamp">기준 {{ timeLabel }}</span>
     </header>
 
     <div class="body">
@@ -97,29 +155,31 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
           :active-code="activeCode"
           @select="select"
         />
+
+        <MapLegend :unit="configStore.unitSymbol" :convert-temp="convertTemp" class="legend-row" />
       </div>
 
       <aside class="panel">
-        <section v-if="selectedCity" class="card summary">
+        <section v-if="shownCity" class="card summary">
           <p class="sum-label">선택한 지역</p>
           <div class="sum-top">
-            <h2 class="sum-name">{{ selectedCity.name }}</h2>
+            <h2 class="sum-name">{{ shownCity.name }}</h2>
             <span class="sum-temp">
-              <RollingNumber :value="convertTemp(selectedCity.temp)" />
+              <RollingNumber :value="convertTemp(shownCity.temp)" />
               <span class="sum-unit">{{ configStore.unitSymbol }}</span>
             </span>
           </div>
           <p class="sum-status">
-            {{ selectedCity.status }}
+            {{ shownCity.status }}
             <span class="dot">·</span>
-            {{ cityIsNight(selectedCity) ? '🌙' : '☀️' }}
-            현지 {{ formatLocalTime(selectedCity.timezone, now) }}
+            {{ cityIsNight(shownCity) ? '🌙' : '☀️' }}
+            현지 {{ formatLocalTime(shownCity.timezone, targetMs) }}
           </p>
 
           <dl class="sum-stats">
-            <div><dt>체감</dt><dd><RollingNumber :value="convertTemp(selectedCity.feelsLike)" />{{ configStore.unitSymbol }}</dd></div>
-            <div><dt>습도</dt><dd><RollingNumber :value="selectedCity.humidity" />%</dd></div>
-            <div><dt>풍속</dt><dd><RollingNumber :value="selectedCity.windSpeed" />m/s</dd></div>
+            <div><dt>체감</dt><dd><RollingNumber :value="convertTemp(shownCity.feelsLike)" />{{ configStore.unitSymbol }}</dd></div>
+            <div><dt>습도</dt><dd><RollingNumber :value="shownCity.humidity" />%</dd></div>
+            <div><dt>풍속</dt><dd><RollingNumber :value="shownCity.windSpeed" />m/s</dd></div>
           </dl>
 
           <button class="btn-detail" @click="goDetail">상세보기 →</button>
@@ -145,6 +205,16 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
         </section>
       </aside>
     </div>
+
+    <!-- 시간여행: 칩을 고르면 지도 전체가 그 시각의 예보로 바뀐다 -->
+    <TimeTravelBar
+      v-model="timeIndex"
+      :slots="selectedForecast"
+      :timezone="selectedCity?.timezone ?? 0"
+      :current="selectedCity"
+      :convert-temp="convertTemp"
+      class="travel"
+    />
   </div>
 </template>
 
@@ -182,6 +252,17 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
   color: rgba(255, 255, 255, 0.6);
 }
 
+.stamp {
+  margin-left: auto;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: #fff;
+}
+
 .body {
   display: flex;
   gap: var(--sp-6);
@@ -191,6 +272,17 @@ const goDetail = () => selectedId.value && router.push(`/weather/${selectedId.va
 .map-wrap {
   flex: 0 0 520px;
   min-width: 0;
+}
+
+.legend-row {
+  margin-top: var(--sp-3);
+}
+
+.travel {
+  padding: var(--sp-3) var(--sp-4) var(--sp-2);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .panel {
