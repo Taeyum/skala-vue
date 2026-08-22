@@ -11,6 +11,7 @@ import { useForecastStore } from '@/stores/forecastStore.js'
 import { useAirStore } from '@/stores/airStore.js'
 import ForecastChart from '@/components/exercise/ForecastChart.vue'
 import LifeBriefing from '@/components/exercise/LifeBriefing.vue'
+import RollingNumber from '@/components/exercise/RollingNumber.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -185,7 +186,7 @@ onMounted(() => {
 
       <div v-if="city" class="hero-bottom">
         <div class="temp-row">
-          <span class="temp-big">{{ displayTemp ?? '--' }}<span class="deg">°</span></span>
+          <span class="temp-big"><RollingNumber :value="displayTemp" /><span class="deg">°</span></span>
           <div class="city-info">
             <h2>{{ city.name }}</h2>
             <p class="date">{{ today }}</p>
@@ -248,7 +249,7 @@ onMounted(() => {
             @click="goDetail(item.id)"
           >
             <span class="city-name">{{ item.name }}</span>
-            <span class="city-temp">{{ item.temp ?? '--' }}°</span>
+            <span class="city-temp"><RollingNumber :value="item.temp" />°</span>
           </li>
         </ul>
       </div>
@@ -263,7 +264,7 @@ onMounted(() => {
         <dl class="detail-list">
           <div class="detail-row">
             <dt>기온</dt>
-            <dd>{{ displayTemp ?? '--' }}{{ configStore.unitSymbol }}</dd>
+            <dd><RollingNumber :value="displayTemp" />{{ configStore.unitSymbol }}</dd>
           </div>
           <div class="detail-row">
             <dt>날씨</dt>
@@ -271,15 +272,15 @@ onMounted(() => {
           </div>
           <div class="detail-row">
             <dt>구름</dt>
-            <dd>{{ city.clouds ?? '--' }}%</dd>
+            <dd><RollingNumber :value="city.clouds" />%</dd>
           </div>
           <div class="detail-row">
             <dt>습도</dt>
-            <dd>{{ city.humidity ?? '--' }}%</dd>
+            <dd><RollingNumber :value="city.humidity" />%</dd>
           </div>
           <div class="detail-row">
             <dt>풍속</dt>
-            <dd>{{ city.windSpeed ?? '--' }}m/s</dd>
+            <dd><RollingNumber :value="city.windSpeed" />m/s</dd>
           </div>
           <div v-if="sun" class="detail-row">
             <dt>일출</dt>
@@ -299,11 +300,11 @@ onMounted(() => {
         <dl class="detail-list">
           <div class="detail-row">
             <dt>미세먼지 (PM10)</dt>
-            <dd>{{ air.pm10 }}㎍/㎥</dd>
+            <dd><RollingNumber :value="air.pm10" />㎍/㎥</dd>
           </div>
           <div class="detail-row">
             <dt>초미세먼지 (PM2.5)</dt>
-            <dd>{{ air.pm25 }}㎍/㎥</dd>
+            <dd><RollingNumber :value="air.pm25" />㎍/㎥</dd>
           </div>
         </dl>
       </div>

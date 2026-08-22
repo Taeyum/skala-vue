@@ -1,4 +1,6 @@
 <script setup>
+import RollingNumber from '@/components/exercise/RollingNumber.vue'
+
 defineProps({
   city: { type: Object, default: null },
   displayTemp: { type: [Number, String], default: null },
@@ -33,26 +35,26 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@4x.png`
       <div class="hero-center">
         <img v-if="city.icon" :src="iconUrl(city.icon)" alt="" class="hero-icon" />
         <span class="hero-temp"
-          >{{ displayTemp ?? '--' }}<span class="unit">{{ unit }}</span></span
+          ><RollingNumber :value="displayTemp" /><span class="unit">{{ unit }}</span></span
         >
       </div>
 
       <div class="hero-right">
         <div class="stat">
           <span class="stat-label">체감</span>
-          <span class="stat-value">{{ city.feelsLike ?? '--' }}{{ unit }}</span>
+          <span class="stat-value"><RollingNumber :value="city.feelsLike" />{{ unit }}</span>
         </div>
         <div class="stat">
           <span class="stat-label">습도</span>
-          <span class="stat-value">{{ city.humidity ?? '--' }}%</span>
+          <span class="stat-value"><RollingNumber :value="city.humidity" />%</span>
         </div>
         <div class="stat">
           <span class="stat-label">풍속</span>
-          <span class="stat-value">{{ city.windSpeed ?? '--' }}m/s</span>
+          <span class="stat-value"><RollingNumber :value="city.windSpeed" />m/s</span>
         </div>
         <div class="stat">
           <span class="stat-label">구름</span>
-          <span class="stat-value">{{ city.clouds ?? '--' }}%</span>
+          <span class="stat-value"><RollingNumber :value="city.clouds" />%</span>
         </div>
         <div class="stat">
           <span class="stat-label">일출</span>

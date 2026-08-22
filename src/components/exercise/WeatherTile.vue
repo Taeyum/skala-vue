@@ -1,4 +1,6 @@
 <script setup>
+import RollingNumber from '@/components/exercise/RollingNumber.vue'
+
 defineProps({
   city: { type: Object, required: true },
   displayTemp: { type: [Number, String], default: null },
@@ -36,14 +38,14 @@ const iconUrl = (icon) => `https://openweathermap.org/img/wn/${icon}@2x.png`
     <img v-if="city.icon" :src="iconUrl(city.icon)" alt="" class="tile-icon" />
 
     <div class="tile-temp">
-      {{ displayTemp ?? '--' }}<span class="unit">{{ unit }}</span>
+      <RollingNumber :value="displayTemp" /><span class="unit">{{ unit }}</span>
     </div>
 
     <p class="tile-status">{{ city.status }}</p>
 
     <div class="tile-meta">
-      <span>💧 {{ city.humidity ?? '--' }}%</span>
-      <span>🌬 {{ city.windSpeed ?? '--' }}m/s</span>
+      <span>💧 <RollingNumber :value="city.humidity" />%</span>
+      <span>🌬 <RollingNumber :value="city.windSpeed" />m/s</span>
     </div>
 
     <button class="btn-detail" @click.stop="emit('detail', city)">상세보기 →</button>
