@@ -135,3 +135,70 @@ const WEATHER_TEXT = {
 }
 
 export const getWeatherText = (id, fallback) => WEATHER_TEXT[id] ?? fallback ?? '알 수 없음'
+
+// ── 온도 → 단색 (지도 시도 채색용) ──
+// 그라디언트 문자열은 SVG fill에 못 쓰기 때문에 hex를 돌려주는 함수를 따로 둔다.
+// 16도(쾌적)를 중립축으로 하는 발산형. 한국 기온 -15~40도를 덮는다
+export const TEMP_STOPS = [
+  [-15, '#2c3e8f'],
+  [-5, '#3f7fd0'],
+  [0, '#61a5e8'],
+  [5, '#7fc7d9'],
+  [10, '#8fd4a8'],
+  [16, '#d6de85'],
+  [22, '#f5c14f'],
+  [28, '#ef8f3c'],
+  [34, '#e05a3a'],
+  [40, '#b4232c'],
+]
+
+const hexToRgb = (hex) => [
+  parseInt(hex.slice(1, 3), 16),
+  parseInt(hex.slice(3, 5), 16),
+  parseInt(hex.slice(5, 7), 16),
+]
+
+const rgbToHex = (rgb) => '#' + rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
+
+const NIGHT_TINT = [0x10, 0x1a, 0x2b]
+// 40%까지 섞으면 밤에 시도 구분이 안 될 만큼 어두워져 25%로 낮췄다
+const NIGHT_MIX = 0.25
+
+export const getTempColor = (celsius, isNight = false) => {
+  // 관측이 없는 도시에 색을 지어내지 않는다 (생활 브리핑에서 '--'를 둔 것과 같은 이유)
+  if (celsius === null || celsius === undefined || Number.isNaN(Number(celsius))) {
+    return isNight ? '#2a3442' : '#6b7a8c'
+  }
+
+  const t = Number(celsius)
+  let rgb
+  if (t <= TEMP_STOPS[0][0]) {
+    rgb = hexToRgb(TEMP_STOPS[0][1])
+  } else if (t >= TEMP_STOPS.at(-1)[0]) {
+    rgb = hexToRgb(TEMP_STOPS.at(-1)[1])
+  } else {
+    const i = TEMP_STOPS.findIndex(([stop]) => t < stop)
+    const [t0, c0] = TEMP_STOPS[i - 1]
+    const [t1, c1] = TEMP_STOPS[i]
+    const ratio = (t - t0) / (t1 - t0)
+    const [a, b] = [hexToRgb(c0), hexToRgb(c1)]
+    rgb = a.map((v, k) => v + (b[k] - v) * ratio)
+  }
+
+  // 야간은 별도 팔레트를 두지 않고 딥네이비를 섞는다.
+  // 색상 순서가 그대로 남아서 범례 하나로 낮·밤을 모두 읽을 수 있다
+  if (isNight) {
+    rgb = rgb.map((v, k) => v * (1 - NIGHT_MIX) + NIGHT_TINT[k] * NIGHT_MIX)
+  }
+  return rgbToHex(rgb)
+}
+
+// 바람 세기 → 색 (화살표·범례용). 3단계로 끊어 캔버스 드로우 콜도 이 기준으로 묶는다
+export const WIND_LEVELS = [
+  { max: 4, label: '약함', color: 'rgba(180, 214, 255, 0.45)' },
+  { max: 9, label: '보통', color: 'rgba(214, 234, 255, 0.7)' },
+  { max: Infinity, label: '강함', color: 'rgba(255, 255, 255, 0.92)' },
+]
+
+export const getWindColor = (speed) =>
+  WIND_LEVELS.find((l) => (speed ?? 0) < l.max).color

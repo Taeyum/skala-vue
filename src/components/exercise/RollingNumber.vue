@@ -29,8 +29,14 @@ watch(
     }
     const decimals = decimalsOf(nv)
     const from = shown
-    // 최초 표시와 '--'에서의 복귀는 스냅 — 없던 값이 0부터 굴러오면 거짓 연속성이 된다
-    if (from === null || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // 최초 표시와 '--'에서의 복귀는 스냅 — 없던 값이 0부터 굴러오면 거짓 연속성이 된다.
+    // 탭이 숨겨져 있을 때도 스냅한다. 브라우저가 rAF를 멈추기 때문에
+    // 트윈을 걸어두면 돌아올 때까지 옛 값이 남는다
+    if (
+      from === null ||
+      document.hidden ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
       shown = to
       text.value = to.toFixed(decimals)
       return

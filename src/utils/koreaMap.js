@@ -79,7 +79,7 @@ export const MAP_POINTS = [
   { id: 'city_10', code: '26', offset: [36, -14] }, // 울산
   { id: 'city_11', code: '29', offset: [-48, 6] }, // 세종
   { id: 'city_12', code: '33', offset: [44, -20] }, // 청주 · 충북
-  { id: 'city_13', code: '34', offset: [-44, -4] }, // 홍성 · 충남
+  { id: 'city_13', code: '34', offset: [-46, -34] }, // 홍성 · 충남 (세종 칩과 세로로 벌린다)
   { id: 'city_14', code: '35', offset: [-30, 22] }, // 전주 · 전북
   { id: 'city_15', code: '36', offset: [-38, 12] }, // 목포 · 전남
   { id: 'city_16', code: '37', offset: [34, -18] }, // 안동 · 경북
