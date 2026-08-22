@@ -169,31 +169,34 @@ const handleRemove = (cityId) => {
   <div class="dashboard">
     <CrossfadeBackground :background="backgroundGradient" />
     <WeatherAnimation :main="shownCity?.main" :night="selectedIsNight" />
-    <!-- ① 히어로 -->
-    <WeatherHero
-      :city="shownCity"
-      :display-temp="convertTemp(shownCity?.temp)"
-      :unit="configStore.unitSymbol"
-      :label="heroLabel"
-      :local-time="formatLocalTime(selectedCity?.timezone, targetMs)"
-      :sunrise="formatStamp(selectedCity?.sunrise, selectedCity?.timezone)"
-      :sunset="formatStamp(selectedCity?.sunset, selectedCity?.timezone)"
-      :night="selectedIsNight"
-    >
-      <template #extra>
-        <LifeBriefing :city="shownCity" :forecast="shownForecast" mode="hero" />
-      </template>
-      <!-- 시간여행 스트립: 히어로 카드 하단 -->
-      <template #footer>
-        <TimeTravelBar
-          v-model="timeIndex"
-          :slots="selectedForecast"
-          :timezone="selectedCity?.timezone ?? 0"
-          :current="selectedCity"
-          :convert-temp="convertTemp"
-        />
-      </template>
-    </WeatherHero>
+    <!-- ① 히어로 — 도시가 바뀔 때만 스왑, 시간여행은 key가 같아 숫자만 흐른다 -->
+    <Transition name="hero-swap" mode="out-in">
+      <WeatherHero
+        :key="selectedId"
+        :city="shownCity"
+        :display-temp="convertTemp(shownCity?.temp)"
+        :unit="configStore.unitSymbol"
+        :label="heroLabel"
+        :local-time="formatLocalTime(selectedCity?.timezone, targetMs)"
+        :sunrise="formatStamp(selectedCity?.sunrise, selectedCity?.timezone)"
+        :sunset="formatStamp(selectedCity?.sunset, selectedCity?.timezone)"
+        :night="selectedIsNight"
+      >
+        <template #extra>
+          <LifeBriefing :city="shownCity" :forecast="shownForecast" mode="hero" />
+        </template>
+        <!-- 시간여행 스트립: 히어로 카드 하단 -->
+        <template #footer>
+          <TimeTravelBar
+            v-model="timeIndex"
+            :slots="selectedForecast"
+            :timezone="selectedCity?.timezone ?? 0"
+            :current="selectedCity"
+            :convert-temp="convertTemp"
+          />
+        </template>
+      </WeatherHero>
+    </Transition>
 
     <!-- ② 툴바 -->
     <div class="toolbar">
@@ -340,6 +343,29 @@ const handleRemove = (cityId) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--sp-4);
+}
+
+/* ── 히어로 스왑: 이전 도시는 위로 짧게 물러나고, 새 도시는 아래에서 길게 안착 ── */
+.hero-swap-leave-active {
+  transition:
+    opacity var(--dur-2) var(--ease-in-out),
+    transform var(--dur-2) var(--ease-in-out);
+}
+
+.hero-swap-enter-active {
+  transition:
+    opacity var(--dur-3) var(--ease-emphasized),
+    transform var(--dur-3) var(--ease-emphasized);
+}
+
+.hero-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.99);
+}
+
+.hero-swap-enter-from {
+  opacity: 0;
+  transform: translateY(14px) scale(0.985);
 }
 
 /* ── TransitionGroup 애니메이션 ── */
