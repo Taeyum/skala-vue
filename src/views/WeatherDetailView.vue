@@ -237,7 +237,7 @@ onMounted(() => {
 
     <!-- ── 우측: 정보 패널 ── -->
     <aside class="panel">
-      <div class="panel-block">
+      <div v-reveal class="panel-block">
         <div class="panel-head">
           <h3 class="panel-title">다른 지역 보기</h3>
           <div v-if="pageCount > 1" class="pager">
@@ -259,12 +259,12 @@ onMounted(() => {
         </ul>
       </div>
 
-      <div v-if="city" class="panel-block">
+      <div v-if="city" v-reveal="60" class="panel-block">
         <h3 class="panel-title">생활 브리핑</h3>
         <LifeBriefing :city="city" :forecast="forecastList" :air="air" />
       </div>
 
-      <div v-if="city" class="panel-block">
+      <div v-if="city" v-reveal="120" class="panel-block">
         <h3 class="panel-title">상세 정보</h3>
         <dl class="detail-list">
           <div class="detail-row">
@@ -297,7 +297,7 @@ onMounted(() => {
           </div>
         </dl>
       </div>
-      <div v-if="air" class="panel-block">
+      <div v-if="air" v-reveal="180" class="panel-block">
         <h3 class="panel-title">대기질</h3>
         <div class="air-badge" :style="{ background: air.color }">
           {{ air.label }}

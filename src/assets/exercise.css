@@ -21,3 +21,18 @@
   font-weight: bold;
   border-radius: 6px;
 }
+
+/* v-reveal 스크롤 진입 (utils/revealDirective.js)
+   reduced-motion에서는 디렉티브가 reveal-init을 붙이지 않으므로 항상 보인다 */
+.reveal-init {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.reveal-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--dur-3) var(--ease-out),
+    transform var(--dur-3) var(--ease-out);
+}

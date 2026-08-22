@@ -3,6 +3,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
+import { reveal } from '@/utils/revealDirective.js'
 
 // Element Plus (기존 Code Challenge 실습용)
 import ElementPlus from 'element-plus'
@@ -18,6 +19,7 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
+app.directive('reveal', reveal)
 
 app.use(PrimeVue, {
   license: import.meta.env.VITE_PRIMEUI_LICENSE,

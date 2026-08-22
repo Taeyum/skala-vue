@@ -21,7 +21,7 @@ const STACK = [
 
 <template>
   <div class="about">
-    <section class="card intro">
+    <section v-reveal class="card intro">
       <h1>날씨 대시보드</h1>
       <p>
         SK AX Full-stack Engineering 3 — Frontend Framework 과정에서 단계별로 만들어 온
@@ -30,7 +30,7 @@ const STACK = [
     </section>
 
     <div class="grid">
-      <section class="card">
+      <section v-reveal="60" class="card">
         <h2>사용한 API</h2>
         <ul class="list">
           <li v-for="api in APIS" :key="api.name">
@@ -43,7 +43,7 @@ const STACK = [
         </p>
       </section>
 
-      <section class="card">
+      <section v-reveal="120" class="card">
         <h2>기술 스택</h2>
         <ul class="tags">
           <li v-for="s in STACK" :key="s">{{ s }}</li>
@@ -51,7 +51,7 @@ const STACK = [
       </section>
     </div>
 
-    <section class="card">
+    <section v-reveal="180" class="card">
       <h2>바로가기</h2>
       <div class="links">
         <RouterLink to="/" class="link-btn">🌤️ 대시보드</RouterLink>
